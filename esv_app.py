@@ -1,4 +1,8 @@
 import streamlit as st
+import folium
+from streamlit_folium import st_folium
+from shapely.geometry import Polygon
+
 import ee
 import sys
 import os
@@ -41,6 +45,7 @@ def main():
 
     st.title("🌱 Ecosystem Valuation Tool")
     st.markdown("---")
+    St_Utils.inject_responsive_css()
 
     # Initialize session state
     if 'extracted_values' not in st.session_state:
@@ -63,7 +68,7 @@ def main():
         st.header("Configuration")
 
         # Google Earth Engine Project
-        st.subheader("Google Earth Engine Authorization")
+        st.subheader("Google Earth Engine")
         gee_project = st.text_input(
             "Project ID",
             placeholder="your-gee-project-id",
@@ -99,42 +104,243 @@ def main():
         model_class = ECOSYSTEM_MODELS[ecosystem_type]
         ecosystem_display_name = ECOSYSTEM_DISPLAY_NAMES[ecosystem_type]
 
-
-
-        # Basic Parameters
         st.markdown("### Basic Project Parameters")
-        col1, col2, col3 = st.columns(3)
 
-        with col1:
-            latitude = st.number_input(
-                "Latitude",
-                min_value=-90.0,
-                max_value=90.0,
-                value=0.0,
-                step=0.01,
-                format="%.6f"
-            )
 
-        with col2:
-            longitude = st.number_input(
-                "Longitude",
-                min_value=-180.0,
-                max_value=180.0,
-                value=0.0,
-                step=0.01,
-                format="%.6f"
-            )
 
-        with col3:
-            area_hectares = st.number_input(
-                "Project Area (hectares)",
-                min_value=1,
-                value=100,
-                step=1,
-                format="%d"
-            )
+        # Initialize active tab in session state
+        if 'active_location_tab' not in st.session_state:
+            st.session_state.active_location_tab = "manual"
+
+        st.markdown("""
+        <style>
+            /* Main container for tabs */
+            .stTabs [data-baseweb="tab-list"] {
+                gap: 2px;
+            }
+
+            /* Individual tab appearance */
+            .stTabs [data-baseweb="tab"] {
+                height: 50px;
+                white-space: pre-wrap;
+                background-color: #F0F2F6; /* Background for inactive tabs */
+                border-radius: 4px 4px 0px 0px; /* Rounded top corners */
+                gap: 1px;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                padding-left: 20px;
+                padding-right: 20px;
+                border: 1px solid #ddd; /* Add a border to all tabs */
+                border-bottom: none; /* Remove bottom border for tab itself */
+            }
+
+            /* Active (selected) tab appearance */
+            .stTabs [aria-selected="true"] {
+                background-color: #FFFFFF; /* White background for active tab */
+                border-bottom: none; /* Ensure no bottom border to blend with content frame */
+            }
+
+        </style>
+        """, unsafe_allow_html=True)
+
+        tab_manual, tab_polygon = st.tabs(["📍 Enter Manually", "🗺️ Draw Polygon"])
+
+
+        # Initialize widget keys in session state if they don't exist
+        if 'lat_input' not in st.session_state:
+            st.session_state.lat_input = 20
+        if 'lon_input' not in st.session_state:
+            st.session_state.lon_input = 20
+        if 'area_input' not in st.session_state:
+            st.session_state.area_input = 1000
+
+        with tab_manual:
+            if st.button("🔄 Use Manual Input", key="use_manual_input", help="Click to use manual coordinates"):
+                st.session_state.active_location_tab = "manual"
+                #st.rerun()
+
+            col_params, col_map = st.columns([1, 1])
+            with col_params:
+                if st.session_state.active_location_tab == "manual":
+                    st.success("✅ **Manual input is active**")
+                else:
+                    st.warning("⚠️ Polygon mode is active - click 'Use Manual Input' to switch")
+
+                latitude = st.number_input(
+                    "Latitude",
+                    min_value=-90.0,
+                    max_value=90.0,
+                    step=0.01,
+                    format="%.6f",
+                    key="lat_input"
+                )
+
+                longitude = st.number_input(
+                    "Longitude",
+                    min_value=-180.0,
+                    max_value=180.0,
+                    step=0.01,
+                    format="%.6f",
+                    key="lon_input"
+                )
+
+                area_hectares = st.number_input(
+                    "Project Area (hectares)",
+                    min_value=1,
+                    step=1,
+                    format="%d",
+                    key="area_input"
+                )
+
+            with col_map:
+                st.markdown("**Map Preview**")
+                # Show a preview map with the manually entered coordinates
+                preview_map = folium.Map(location=[latitude, longitude], zoom_start=10)
+                folium.Marker(
+                    location=[latitude, longitude],
+                    popup=f"Location: {latitude:.6f}, {longitude:.6f}",
+                    icon=folium.Icon(color='red', icon='info-sign')
+                ).add_to(preview_map)
+                st_folium(preview_map, key="preview_map", height=400)
+
+        with tab_polygon:
+            if st.button("🔄 Use Polygon Input", key="use_polygon_input", help="Click to use polygon coordinates"):
+                st.session_state.active_location_tab = "polygon"
+                st.rerun()
+
+            # Initialize session state for polygon data
+            if 'saved_polygon' not in st.session_state:
+                st.session_state.saved_polygon = None
+            if 'polygon_centroid' not in st.session_state:
+                st.session_state.polygon_centroid = None
+
+            col_params, col_map = st.columns([1, 1])
+
+            with col_params:
+                # Show which mode is active
+                if st.session_state.active_location_tab == "polygon":
+                    st.success("✅ **Polygon input is active**")
+                else:
+                    st.warning("⚠️ Manual mode is active - click 'Use Polygon Input' to switch")
+
+                # Show current coordinates from polygon
+                if st.session_state.polygon_centroid is not None:
+                    latitude = st.session_state.polygon_centroid[0]
+                    longitude = st.session_state.polygon_centroid[1]
+                    area_hectares = st.session_state.polygon_area
+
+                    #st.success("**Coordinates from Polygon:**")
+                    st.write(f"**Latitude:** {latitude:.6f}")
+                    st.write(f"**Longitude:** {longitude:.6f}")
+                    st.write(f"**Estimated Area:** {area_hectares:.2f} hectares")
+
+                else:
+                    st.warning("**No polygon drawn yet**")
+                    st.info("Draw a polygon on the map to automatically set coordinates")
+                    # Use current manual input values as fallback
+                    latitude = st.session_state.lat_input
+                    longitude = st.session_state.lon_input
+                    area_hectares = st.session_state.area_input
+
+
+                # Button to clear polygon
+                if st.session_state.saved_polygon is not None:
+                    if st.button("🗑️ Clear Polygon", key="clear_poly"):
+                        st.session_state.saved_polygon = None
+                        st.session_state.polygon_centroid = None
+                        st.success("Polygon cleared!")
+                        st.rerun()
+
+            with col_map:
+                st.markdown("**Interactive Map - Draw Polygon**")
+
+                # Create folium map centered on current coordinates
+                map_center = [latitude if latitude != 0.0 else 0.0, longitude if longitude != 0.0 else 0.0]
+                m = folium.Map(location=map_center, zoom_start=10)
+
+                # Add saved polygon if it exists
+                if st.session_state.saved_polygon is not None:
+                    folium.Polygon(
+                        locations=st.session_state.saved_polygon,
+                        color='blue',
+                        weight=2,
+                        fill=True,
+                        fillColor='lightblue',
+                        fillOpacity=0.3,
+                        popup="Saved Polygon"
+                    ).add_to(m)
+
+                    # Add centroid marker
+                    if st.session_state.polygon_centroid is not None:
+                        folium.Marker(
+                            location=st.session_state.polygon_centroid,
+                            popup=f"Centroid: {st.session_state.polygon_centroid[0]:.6f}, {st.session_state.polygon_centroid[1]:.6f}",
+                            icon=folium.Icon(color='red', icon='star')
+                        ).add_to(m)
+
+                # Add drawing functionality
+                folium.plugins.Draw(
+                    export=False,
+                    position='topleft',
+                    draw_options={
+                        'polyline': False,
+                        'rectangle': True,
+                        'polygon': True,
+                        'circle': False,
+                        'marker': False,
+                        'circlemarker': False,
+                    }
+                ).add_to(m)
+
+                # Display the map and capture drawing events
+                map_data = st_folium(m, key="polygon_map", height=400)
+
+                # Process drawn polygons
+                if map_data['all_drawings'] and len(map_data['all_drawings']) > 0:
+                    # Get the last drawn polygon
+                    last_drawing = map_data['all_drawings'][-1]
+
+                    if last_drawing['geometry']['type'] in ['Polygon', 'Rectangle']:
+                        # Extract coordinates
+                        coords = last_drawing['geometry']['coordinates'][0]
+
+                        # Convert to shapely polygon for calculations
+                        polygon_coords = [(coord[0], coord[1]) for coord in coords[:-1]]
+                        shapely_polygon = Polygon(polygon_coords)
+                        centroid = shapely_polygon.centroid
+                        area = St_Utils.get_geodesic_area(shapely_polygon)
+
+                        # Convert coordinates to lat/lon format for folium
+                        folium_coords = [(coord[1], coord[0]) for coord in polygon_coords]
+
+                        # Automatically update the polygon centroid
+                        st.session_state.polygon_centroid = [centroid.y, centroid.x]
+                        st.session_state.saved_polygon = folium_coords
+                        st.session_state.polygon_area = area
+
+                        # Display current polygon info
+                        st.success("✅ Polygon saved!")
+                        st.write(f"**Centroid:** {centroid.y:.6f}, {centroid.x:.6f}")
+                        st.write(
+                            f"**Estimated Area:** {area:.2f} hectares")
+
+                # Set the final coordinates based on which tab is active
+                if st.session_state.active_location_tab == "manual":
+                    final_latitude = st.session_state.lat_input
+                    final_longitude = st.session_state.lon_input
+                    final_area = st.session_state.area_input
+                else:  # polygon tab is active
+                    if st.session_state.polygon_centroid is not None:
+                        final_latitude = st.session_state.polygon_centroid[0]
+                        final_longitude = st.session_state.polygon_centroid[1]
+                        final_area = st.session_state.polygon_area
+                    else:
+                        final_latitude = st.session_state.lat_input
+                        final_longitude = st.session_state.lon_input
+                        final_area = st.session_state.area_input
+        st.markdown("---")
         # Get location information based on coordinates
-        county, country = St_Utils.get_location_info(latitude, longitude)
+        county, country = St_Utils.get_location_info(final_latitude, final_longitude)
 
         # Display location information
         location_text = ""
@@ -143,12 +349,12 @@ def main():
         elif country:
             location_text = f" | Location: {country}"
 
+
+
         st.subheader(f"Analysis for: {ecosystem_display_name}{location_text}")
-
         # Optionally show coordinates
-        if latitude != 0.0 or longitude != 0.0:
-            st.caption(f"Coordinates: {latitude:.6f}, {longitude:.6f}")
-
+        if final_latitude != 0.0 or final_longitude != 0.0:
+            st.caption(f"Coordinates: {final_latitude:.6f}, {final_longitude:.6f}")
         st.markdown("---")
 
         col4, col5,  = st.columns(2)
@@ -225,8 +431,8 @@ def main():
                 if not st.session_state.get('gee_initialized', 0):
                     st.error("Please initialize Google Earth Engine first")
                 else:
-                    with st.spinner("Extracting values from Google Earth Engine..."):
-                        extracted_values, error = St_Utils.extract_values(model_class, latitude, longitude, area_hectares)
+                    with st.spinner(f"Extracting values from Google Earth Engine for {final_latitude:.6f}, {final_longitude:.6f} {final_area}... "):
+                        extracted_values, error = St_Utils.extract_values(model_class, final_latitude, final_longitude, final_area)
 
                         if error:
                             st.error(f"Extraction failed: {error}")

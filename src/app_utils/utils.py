@@ -2,7 +2,10 @@ import streamlit as st
 import math
 import reverse_geocode
 from iso3166 import countries
+from shapely.geometry import Polygon
+from pyproj import CRS, Transformer, Geod
 from ..extract_data.predictions import Predictions
+from ..utils.spatial import Spatial
 
 
 class St_Utils:
@@ -57,6 +60,19 @@ class St_Utils:
             return p.values_dict, None
         except Exception as e:
             return None, str(e)
+
+    @staticmethod
+    def extract_global_layers(cost_layers, lat, lon, area_hectares):
+        l = []
+        for layer in cost_layers:
+            bucket = layer.bucket
+            gcs_loc = layer.gcs_path
+            gcs_path = f"gs://{bucket}/{gcs_loc}"
+            value = Spatial.get_value_from_cog(gcs_path, lon, lat, area_hectares, band=layer.band)
+            d = {layer.full_name:  value}
+            l.append(d)
+
+        return l
 
     @staticmethod
     def get_location_info(lat, lon):
@@ -128,3 +144,54 @@ class St_Utils:
             return ecosystem_value, None
         except Exception as e:
             return None, str(e)
+
+    @staticmethod
+    def inject_responsive_css():
+        """Inject CSS to make folium maps responsive"""
+        st.markdown("""
+        <style>
+        /* Make folium maps responsive */
+        .stfolium {
+            width: 100% !important;
+        }
+
+        .stfolium > div {
+            width: 100% !important;
+        }
+
+        /* Adjust map container */
+        .folium-map {
+            width: 100% !important;
+            height: 60vh !important; /* 60% of viewport height */
+            min-height: 400px !important;
+            max-height: 600px !important;
+        }
+
+        /* Responsive breakpoints */
+        @media (max-width: 768px) {
+            .folium-map {
+                height: 50vh !important;
+                min-height: 300px !important;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .folium-map {
+                height: 70vh !important;
+                max-height: 700px !important;
+            }
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+    @staticmethod
+    def get_geodesic_area(polygon: Polygon):
+
+        g = Geod(ellps='WGS84')
+        geod_area = abs(g.geometry_area_perimeter(polygon)[0])
+
+        return geod_area / 10000
+
+
+
+

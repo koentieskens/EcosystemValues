@@ -1,6 +1,7 @@
 from ..variables.variables import BenefitVariable, ClimateVariable, CountryVariable, Var
 from ..variables.land_cover import LandCoverGroup
 from ..variables.project_variables import ProjectVariables, Pvar
+from ..variables.global_layers import GCSLayer
 
 class TropicalForest:
 
@@ -30,6 +31,13 @@ class TropicalForest:
         Pvar(ProjectVariables.CONS_SURPLUS, -1.834)
     ]
 
+    GLOBAL_LAYERS = [
+        GCSLayer.RESTORATION_OPPORTUNITY_COST,
+        GCSLayer.EXOTIC_IMPLEMENTATION_COST,
+        GCSLayer.NATIVE_IMPLEMENTATION_COST,
+        GCSLayer.REGENERATION_IMPLEMENTATION_COST
+    ]
+
 
 class TemparateForest:
     VARIABLES = [
@@ -56,6 +64,13 @@ class TemparateForest:
         Pvar(ProjectVariables.EXISTENCE_BEQUEST, 1.082),
         Pvar(ProjectVariables.TOTAL_FLOW, 0.177),
         Pvar(ProjectVariables.EXCHANGE_VALUE, -2.028)
+    ]
+
+    GLOBAL_LAYERS = [
+        GCSLayer.RESTORATION_OPPORTUNITY_COST,
+        GCSLayer.EXOTIC_IMPLEMENTATION_COST,
+        GCSLayer.NATIVE_IMPLEMENTATION_COST,
+        GCSLayer.REGENERATION_IMPLEMENTATION_COST
     ]
 
 
@@ -96,6 +111,13 @@ class IntensiveLandUse:
         Pvar(ProjectVariables.CONS_SURPLUS, -0.428)
     ]
 
+    GLOBAL_LAYERS = [
+        GCSLayer.RESTORATION_OPPORTUNITY_COST,
+        GCSLayer.EXOTIC_IMPLEMENTATION_COST,
+        GCSLayer.NATIVE_IMPLEMENTATION_COST,
+        GCSLayer.REGENERATION_IMPLEMENTATION_COST
+    ]
+
 
 class Mangroves:
     VARIABLES = [
@@ -124,6 +146,13 @@ class Mangroves:
         Pvar(ProjectVariables.TOTAL_FLOW, -0.187),
         Pvar(ProjectVariables.EXCHANGE_VALUE, -0.133),
         Pvar(ProjectVariables.CONS_SURPLUS, -0.743)
+    ]
+
+    GLOBAL_LAYERS = [
+        GCSLayer.RESTORATION_OPPORTUNITY_COST,
+        GCSLayer.EXOTIC_IMPLEMENTATION_COST,
+        GCSLayer.NATIVE_IMPLEMENTATION_COST,
+        GCSLayer.REGENERATION_IMPLEMENTATION_COST
     ]
 
 
@@ -158,6 +187,13 @@ class Grassland:
         Pvar(ProjectVariables.TOTAL_FLOW, -0.004),
         Pvar(ProjectVariables.EXCHANGE_VALUE, 0.76),
         Pvar(ProjectVariables.CONS_SURPLUS, -0.445)
+    ]
+
+    GLOBAL_LAYERS = [
+        GCSLayer.RESTORATION_OPPORTUNITY_COST,
+        GCSLayer.EXOTIC_IMPLEMENTATION_COST,
+        GCSLayer.NATIVE_IMPLEMENTATION_COST,
+        GCSLayer.REGENERATION_IMPLEMENTATION_COST
     ]
 
 

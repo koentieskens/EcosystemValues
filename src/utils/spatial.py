@@ -5,6 +5,15 @@ import reverse_geocode
 from iso3166 import countries
 import pandas as pd
 import numpy as np
+from shapely.geometry import Polygon
+from pyproj import Geod
+import geopandas as gpd
+import rioxarray as rxr
+import rasterio as rio
+from rasterio.windows import from_bounds
+from rasterstats import zonal_stats
+
+
 
 
 class Spatial:
@@ -105,6 +114,88 @@ class Spatial:
                     print(f"Filled {country} with {int(closest_year)}  data")
 
         return result
+    @staticmethod
+    def create_circle_from_area(lon, lat, area_ha, ellips='WGS84', num_points=64):
+        """
+        Create a circle polygon with specified area in square meters
+
+        Parameters:
+        - center_point: (lon, lat) tuple
+        - area_sqm: desired area in square meters
+        - ellps: ellipsoid (default 'WGS84')
+        - num_points: number of points to approximate circle
+
+        Returns:
+        - shapely Polygon geometry
+        """
+        center_point = (lon, lat)
+        g = Geod(ellps=ellips)
+        # get area in square meters
+        area_sqm = area_ha * 10000
+        # Calculate radius
+        radius_meters = math.sqrt(area_sqm / math.pi)
+
+        # Create circle points
+        circle_points = []
+        for i in range(num_points):
+            azimuth = 360.0 * i / num_points
+            lon, lat, _ = g.fwd(center_point[0], center_point[1], azimuth, radius_meters)
+            circle_points.append((lon, lat))
+
+        circle_points.append(circle_points[0])  # Close polygon
+
+        return Polygon(circle_points)
+
+    @staticmethod
+    def get_value_from_cog(cog_path, lon, lat, area_ha,  buffer_degrees = 0.1, band = 1):
+        circle_geom = Spatial.create_circle_from_area(lon, lat, area_ha)
+        circle_gdf = gpd.GeoDataFrame([1], geometry=[circle_geom], crs='EPSG:4326')
+
+        buffered_circle = circle_geom.buffer(buffer_degrees)
+        buffered_bounds = buffered_circle.bounds
+
+        data_array, transform, no_data_value = Spatial.read_cog(cog_path, buffered_bounds, band=band)
+
+        stats = zonal_stats(
+            circle_gdf,
+            data_array,
+            affine=transform,
+            stats=['mean'],
+            nodata=no_data_value,
+            all_touched=True
+        )
+        return stats[0]['mean']
+
+    @staticmethod
+    def read_cog(cog_path, bounds, band=1):
+        with rio.open(cog_path) as src:
+            window = from_bounds(*bounds, src.transform)
+            nodata_value = src.nodata
+
+            # Read only the windowed data
+            raster_array = src.read(band, window=window)  # rasterio is 1-indexed
+
+            # Get transform for the windowed area
+            transform = src.window_transform(window)
+
+        return raster_array, transform, nodata_value
+
+
+if __name__ == '__main__':
+
+
+    lon, lat = (-11.4, 15.09)
+    area_ha = 100
+    bucket_name = "nbs-tool-public"
+    cog_filename = "data/global_data/cost/se_plan/opportunity_cost.tif"
+    gcs_path = f"gs://{bucket_name}/{cog_filename}"
+    value = Spatial.get_value_from_cog(gcs_path, lon, lat, area_ha)
+    print(value)
+
+
+
+
+
 
 
 
