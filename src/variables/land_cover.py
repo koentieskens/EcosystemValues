@@ -2,8 +2,8 @@ from enum import Enum
 
 
 class LandCoverGroup(Enum):
-    FOREST = 'LC_Forest', ['50', '60', '70', '80', '90'], "Land cover: forest (%)"
-
+    FOREST = 'LC_Forest', ['121', '122', '130', '140', '150', '151', '152', '153', '160', '170', '180', '190'], "Land cover: forest (%)"
+    MANGROVE = 'LC_Mangrove', ['100', '110', '120'], "Land cover: mangrove (%)"
 
     def get_lc(self):
         return

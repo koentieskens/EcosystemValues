@@ -167,11 +167,32 @@ class Spatial:
         return stats[0]['mean']
 
     @staticmethod
+    def get_value_from_cog_with_polygon(cog_path, polygon_gdf, buffer_degrees=0.1, band=1):
+
+
+        buffered_aoi = polygon_gdf.buffer(buffer_degrees)
+        polygon = buffered_aoi.geometry.squeeze()
+
+        buffered_aoi_bounds = polygon.bounds
+
+
+        data_array, transform, no_data_value = Spatial.read_cog(cog_path, buffered_aoi_bounds, band=band)
+
+        stats = zonal_stats(
+            polygon_gdf,
+            data_array,
+            affine=transform,
+            stats=['mean'],
+            nodata=no_data_value,
+            all_touched=True
+        )
+        return stats[0]['mean']
+
+    @staticmethod
     def read_cog(cog_path, bounds, band=1):
         with rio.open(cog_path) as src:
             window = from_bounds(*bounds, src.transform)
             nodata_value = src.nodata
-
             # Read only the windowed data
             raster_array = src.read(band, window=window)  # rasterio is 1-indexed
 
@@ -188,9 +209,30 @@ if __name__ == '__main__':
     area_ha = 100
     bucket_name = "nbs-tool-public"
     cog_filename = "data/global_data/cost/se_plan/opportunity_cost.tif"
-    gcs_path = f"gs://{bucket_name}/{cog_filename}"
+    gcs_path = f"gs://{bucket_name}/{gcs_path}"
     value = Spatial.get_value_from_cog(gcs_path, lon, lat, area_ha)
     print(value)
+
+    from shapely.geometry import Polygon
+
+    # Create a test polygon in Cameroon (around Yaoundé area)
+    # Coordinates are in longitude, latitude format for Shapely
+    cameroon_coords = [
+        (11.5180, 3.8480),  # Point 1
+        (11.5220, 3.8480),  # Point 2
+        (11.5240, 3.8520),  # Point 3
+        (11.5220, 3.8560),  # Point 4
+        (11.5180, 3.8540),  # Point 5
+        (11.5160, 3.8500),  # Point 6
+    ]
+    import geopandas as gpd
+    test_drawn_polygon = Polygon(cameroon_coords)
+    aoi_gdf = gpd.GeoDataFrame([1], geometry=[test_drawn_polygon], crs='EPSG:4326')
+    polygon_gdf = aoi_gdf
+    bucket_name = "nbs-tool-public"
+    gcs_path = "data/global_data/benefit/siikamaki/wat_2020_global_4326.tif"
+    cog_path = f"gs://{bucket_name}/{gcs_path}"
+
 
 
 

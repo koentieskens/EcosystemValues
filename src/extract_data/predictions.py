@@ -116,6 +116,7 @@ class Predictions:
                 buffer = 0
             buffer_size = Predictions.get_buffer_size(radius=radius, buffer=buffer)
             value = Predictions.reduce_region(image, feature, buffer_size, variable.var.scale)
+            value = {k: v * variable.var.multiplier for k, v in value.items()}
 
         return value
 

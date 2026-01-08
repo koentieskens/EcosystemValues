@@ -75,6 +75,18 @@ class St_Utils:
         return l
 
     @staticmethod
+    def extract_global_layer_with_polygon(layers, polygon_gdf):
+        l = []
+        for layer in layers:
+            bucket = layer.bucket
+            gcs_loc = layer.gcs_path
+            gcs_path = f"gs://{bucket}/{gcs_loc}"
+            value = Spatial.get_value_from_cog_with_polygon(gcs_path, polygon_gdf, band=layer.band)
+            d = {layer.full_name: value}
+            l.append(d)
+        return l
+
+    @staticmethod
     def get_location_info(lat, lon):
         """Get county and country information from coordinates"""
         try:
@@ -99,6 +111,77 @@ class St_Utils:
             return county, country
         except Exception as e:
             return "", ""
+
+    @staticmethod
+    def log_p1(value):
+        return math.log(value + 1) if (value + 1) > 0 else 0
+
+
+    @staticmethod
+    def predict_value(model_class, ecosystem_service, value_type, area_hectares):
+        try:
+            # Get model constants
+            intercept = model_class.CONSTANTS.get('Intercept')
+            area_ln_coef = model_class.CONSTANTS.get('Area_ha_ln')
+
+            # Start with intercept
+            regression_sum = intercept
+
+            # Add area term: ln(area_hectares) * area_ln_coefficient
+            est = St_Utils.log_p1(area_hectares) * area_ln_coef
+
+            equation = f"Benefits = exp({intercept} + {area_ln_coef} * Area_ha_ln"
+
+            regression_sum += est
+
+            # Add model variables
+            for var_obj in model_class.VARIABLES:
+
+                if hasattr(var_obj, 'ln') and var_obj.ln:
+                    value = St_Utils.log_p1(var_obj.value)
+                    add_on = "_ln"
+                else:
+                    value = var_obj.value
+                    add_on = ""
+
+                est = var_obj.coefficient * value
+                regression_sum += est
+                equation += f" + {var_obj.coefficient} * {var_obj.var.name}{add_on}"
+
+            #add ecosys service
+            value = 1
+            coefficient = ecosystem_service.coefficient
+            est = coefficient * value
+            print(est)
+            regression_sum += est
+            equation += f" + {value} * {coefficient} "
+
+            # add value type
+            value = 1
+            coefficient = value_type.coefficient
+            est = coefficient * value
+            print(est)
+            regression_sum += est
+            equation += f" + {value} * {coefficient} "
+
+            #add sub biome
+            if model_class.SUB_BIOMES:
+                for sub_biome in model_class.SUB_BIOMES:
+                    value = sub_biome.value
+                    coefficient = sub_biome.coefficient
+                    est = coefficient * value
+                    print(est)
+                    regression_sum += est
+                    equation += f" + {value} * {coefficient} "
+
+
+            ecosystem_value = math.exp(regression_sum)
+
+            return ecosystem_value
+
+        except Exception as e:
+            return None
+
 
     @staticmethod
     def calculate_ecosystem_value(model_class, float_variables, project_variables, area_hectares):

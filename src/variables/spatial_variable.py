@@ -15,7 +15,7 @@ class VariableData:
     extraction_function: callable
     source: str
     scale: int
-    multiplier: float | None = None
+    multiplier: float = 1.0
     method: str | None = None
     buffer: int | None = None
 

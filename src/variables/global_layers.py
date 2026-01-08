@@ -51,3 +51,51 @@ class GCSLayer(GlobalLayer):
         bucket='nbs-tool-public'
     )
 
+    FOREST_RECREATION_VALUE = GlobalLayerData(
+        name="FOREST_RECREATION_VALUE",
+        full_name="Forest Recreation Value",
+        description="Forest recreation value based on Siikamaki et al. (2024)",
+        gcs_path="data/global_data/benefit/siikamaki/rec_2020_global_4326.tif",
+        unit='2020 USD/ha',
+        source='https://documents.worldbank.org/en/publication/documents-reports/documentdetail/099101124145545368',
+        scale=10000,
+        band=1,
+        bucket='nbs-tool-public'
+    )
+
+    FOREST_NONWOOD_PRODUCTS_VALUE = GlobalLayerData(
+        name="FOREST_NONWOOD_PRODUCTS_VALUE",
+        full_name="Forest Non-Wood Products Value",
+        description="Forest non-wood products value based on Siikamaki et al. (2024)",
+        gcs_path="data/global_data/benefit/siikamaki/nwfp_2020_global_4326.tif",
+        unit='2020 USD/ha',
+        source='https://documents.worldbank.org/en/publication/documents-reports/documentdetail/099101124145545368',
+        scale=10000,
+        band=1,
+        bucket='nbs-tool-public'
+    )
+
+    FOREST_WATER_SERVICE_VALUE = GlobalLayerData(
+        name="FOREST_WATER_SERVICE_VALUE",
+        full_name="Forest Water Service Value",
+        description="Forest water services value based on Siikamaki et al. (2024)",
+        gcs_path="data/global_data/benefit/siikamaki/wat_2020_global_4326.tif",
+        unit='2020 USD/ha',
+        source='https://documents.worldbank.org/en/publication/documents-reports/documentdetail/099101124145545368',
+        scale=10000,
+        band=1,
+        bucket='nbs-tool-public'
+    )
+
+    FOREST_HABITAT_VALUE = GlobalLayerData(
+        name="FOREST_HABITAT_VALUE",
+        full_name="Forest Habitat Value",
+        description="Forest habitat value based on Siikamaki et al. (2024)",
+        gcs_path="data/global_data/benefit/siikamaki/hab_2020_global_4326.tif",
+        unit='2020 USD/ha',
+        source='https://documents.worldbank.org/en/publication/documents-reports/documentdetail/099101124145545368',
+        scale=10000,
+        band=1,
+        bucket='nbs-tool-public'
+    )
+

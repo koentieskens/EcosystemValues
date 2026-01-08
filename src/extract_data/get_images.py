@@ -158,6 +158,13 @@ class GeeImageExtractor:
         return image
 
     @staticmethod
+    def get_npp_share(gee_path: str = None, name: str = 'npp_share', year: int = 2024,**kwargs):
+        npp_year = GeeImageExtractor.get_npp(gee_path, year=year)
+        npp_max = GeeImageExtractor.get_npp_max(gee_path, year=year)
+        npp_share = npp_year.divide(npp_max).rename(name)
+        return npp_share
+
+    @staticmethod
     def get_human_modif_index(gee_path: str = None, name: str = 'HumanModifIndex', year: int = 2024, **kwargs):
 
 

@@ -52,6 +52,7 @@ class BenefitVariable(Variable):
         description='Ecosystem Integrity Index',
         aggregation='mean',
         unit='Index 0-1',
+        multiplier=100,
         gee_path='projects/ee-maidiesinitam/assets/valueFunctions/eii_padj_v5140524_reprojected',
         alt_path='projects/ee-maidiesinitam/assets/valueFunctions/eii_padj_v5140524_reprojected',
         extraction_function=GEE.get_image_from_single_image,
@@ -65,6 +66,7 @@ class BenefitVariable(Variable):
         description='Index of biodiversity intactness',
         aggregation='mean',
         unit='Index 0-1',
+        multiplier=100,
         gee_path='users/ABC-Map/biodiversity',
         alt_path='users/ABC-Map/biodiversity',
         extraction_function=GEE.get_image_from_single_image,
@@ -91,6 +93,7 @@ class BenefitVariable(Variable):
         full_name='Fragmentation',
         description='Fragmentation based on Global HUman Modification Index',
         aggregation='mean',
+        multiplier=100,
         unit='Index 0-1',
         gee_path="CSP/HM/GlobalHumanModification",
         alt_path="CSP/HM/GlobalHumanModification",
@@ -119,6 +122,7 @@ class BenefitVariable(Variable):
         description='Human Modification Index',
         aggregation='mean',
         unit='Index 0-1',
+        multiplier=100,
         alt_path="projects/sat-io/open-datasets/GHM/ghm_v15",
         gee_path='projects/ee-maidiesinitam/assets/valueFunctions/ghm',
         extraction_function=GEE.get_human_modif_indexb,
@@ -132,6 +136,7 @@ class BenefitVariable(Variable):
         description='Ecologically-Relevant Maps of Landforms and Physiographic Diversity for Climate Adaptation Planning',
         aggregation='mean',
         unit='Index 0-1',
+        multiplier=100,
         gee_path="CSP/ERGo/1_0/Global/ALOS_topoDiversity",
         alt_path='CSP/ERGo/1_0/Global/ALOS_topoDiversity',
         extraction_function=GEE.get_image_from_single_image,
@@ -174,6 +179,20 @@ class BenefitVariable(Variable):
         gee_path="MODIS/061/MOD17A3HGF",
         alt_path="MODIS/061/MOD17A3HGF",
         extraction_function=GEE.get_npp_max,
+        source='https://developers.google.com/earth-engine/datasets/catalog/MODIS_061_MOD17A3HGF',
+        scale=463
+    )
+
+    NPP_SHARE = VariableData(
+        name='NPP_share',
+        full_name='Net Primary Production share',
+        description='Maximum value of Net Primary Productivity from 2001 - project year divided by NPP of project year',
+        aggregation='mean',
+        unit='kg C/m2',
+        multiplier=100,
+        gee_path="MODIS/061/MOD17A3HGF",
+        alt_path="MODIS/061/MOD17A3HGF",
+        extraction_function=GEE.get_npp_share,
         source='https://developers.google.com/earth-engine/datasets/catalog/MODIS_061_MOD17A3HGF',
         scale=463
     )
@@ -514,5 +533,6 @@ class Var:
         self.lc = lc
         self.var.buffer = buffer
         self.coefficient = coefficient
+        self.value = 0
 
 
