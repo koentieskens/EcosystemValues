@@ -17,14 +17,14 @@ class SpatialData(variable_template.Data):
     method: str | None = None
     buffer: int | None = None
 
-
-class SpatialVariable(SpatialData):
     def get_image(self, **kwargs):
         """Get the image for the variable."""
         return self.extraction_function(gee_path=self.gee_path, name=self.name, **kwargs)
 
-    @property
-    def name(self):
+    def get_tooltip(self):
+        return f'{self.description}'
+
+    def get_name(self):
         """Get the name of the variable used in further processing."""
         name = self.name
         if self.buffer is not None:
@@ -38,7 +38,6 @@ class SpatialVariable(SpatialData):
                 name = name + '_' + str(self.buffer)
 
         return name
-
 
     @classmethod
     def to_dataframe(cls):
@@ -75,13 +74,13 @@ class SpatialVariable(SpatialData):
         return pd.DataFrame(data)
 
 
-class BenefitSpatialVariable(SpatialVariable):
+class BenefitSpatialVariable:
     """Enum to represent spatial variables that can be extracted for given points."""
 
     ACCESSIBILITY = SpatialData(
         name='accessibility',
         full_name='Accessibility',
-        description='Time to nearest city/town',
+        description='Time to nearest city/town in minutes',
         aggregation='mean',
         unit='minutes',
         gee_path='projects/ee-maidiesinitam/assets/valueFunctions/accessibility_city_2015',
@@ -94,7 +93,7 @@ class BenefitSpatialVariable(SpatialVariable):
     AIRPOLLUTION = SpatialData(
         name='airPollution',
         full_name='Air pollution',
-        description='Concentration of PM2.5',
+        description='Concentration of PM2.5 in micrograms per cubic meter',
         aggregation='mean',
         unit='ug/M^3',
         alt_path='projects/sat-io/open-datasets/GLOBAL-SATELLITE-PM25/ANNUAL',
@@ -148,7 +147,7 @@ class BenefitSpatialVariable(SpatialVariable):
     ES_DIVERSITY = SpatialData(
         name='ecosysDiv',
         full_name='Ecosystem diversity',
-        description='Ecossytem Diversity',
+        description='Index of ecosystem diversity',
         aggregation='mean',
         unit='Index 0-1',
         gee_path='projects/ee-maidiesinitam/assets/valueFunctions/ecosystemDiversity',
@@ -161,8 +160,8 @@ class BenefitSpatialVariable(SpatialVariable):
 
     FRAGMENTATION = SpatialData(
         name='fragmentation',
-        full_name='Fragmentation',
-        description='Fragmentation based on Global HUman Modification Index',
+        full_name='Landscape fragmentation',
+        description='Fragmentation based on Global Human Modification Index',
         aggregation='mean',
         multiplier=100,
         unit='Index 0-1',
@@ -218,7 +217,7 @@ class BenefitSpatialVariable(SpatialVariable):
     NIGHT_LIGHT = SpatialData(
         name='nightLight',
         full_name='Night time light',
-        description='Annual values for night time light',
+        description='Annual values for night time light in nanoWatts/cm2/yr',
         aggregation='mean',
         unit='nanoWatts/cm2/sr',
         gee_path='projects/ee-maidiesinitam/assets/Harmonized_NTL',
@@ -231,7 +230,7 @@ class BenefitSpatialVariable(SpatialVariable):
     NPP_YEAR = SpatialData(
         name='NPP_year',
         full_name='Net Primary Production',
-        description='Net Primary Productivity',
+        description='Net Primary Productivity in kg C/m2',
         aggregation='mean',
         unit='kg C/m2',
         gee_path="MODIS/061/MOD17A3HGF",
@@ -244,7 +243,7 @@ class BenefitSpatialVariable(SpatialVariable):
     NPP_MAX = SpatialData(
         name='NPP_max',
         full_name='Net Primary Production Max',
-        description='Maximum value of Net Primary Productivity from 2001 - project year',
+        description='Maximum value of Net Primary Productivity from 2001 - project year in kg C/m2',
         aggregation='mean',
         unit='kg C/m2',
         gee_path="MODIS/061/MOD17A3HGF",
@@ -256,8 +255,8 @@ class BenefitSpatialVariable(SpatialVariable):
 
     NPP_SHARE = SpatialData(
         name='NPP_share',
-        full_name='Net Primary Production share',
-        description='Maximum value of Net Primary Productivity from 2001 - project year divided by NPP of project year',
+        full_name='Net Primary Production',
+        description='Current NPP divided byMaximum value of Net Primary Productivity from 2001 in kg C/m2',
         aggregation='mean',
         unit='kg C/m2',
         multiplier=100,
@@ -284,7 +283,7 @@ class BenefitSpatialVariable(SpatialVariable):
     POP_DENSITY = SpatialData(
         name='popDensity',
         full_name='Population Density',
-        description='Population density',
+        description='Population density in persons per square kilometer',
         aggregation='mean',
         unit='persons per km^2',
         gee_path="CIESIN/GPWv411/GPW_Population_Density",
@@ -324,7 +323,7 @@ class BenefitSpatialVariable(SpatialVariable):
     ROAD_DENSITY = SpatialData(
         name='roadDensity',
         full_name='Road Density',
-        description='Length of roads per square kilometer',
+        description='Total length of roads in meters per square kilometer',
         aggregation='mean',
         unit='m/km2',
         gee_path="users/philipaudebert/GRIP/GRIP_World_RoadDensity",
@@ -336,7 +335,7 @@ class BenefitSpatialVariable(SpatialVariable):
 
     SETTLEMENTS = SpatialData(
         name='settlements',
-        full_name='Built-up',
+        full_name='Percentage of built-up land',
         description='Percentage of area classified as built-up land',
         aggregation='mean',
         unit='pct',
@@ -363,7 +362,7 @@ class BenefitSpatialVariable(SpatialVariable):
     LAND_COVER = SpatialData(
         name='land_cover',
         full_name='Land Cover',
-        description='Land Cover classification using ESA CCI lgobal ladncover product for historic availability',
+        description='Land Cover classification using ESA CCI gobal landcover product for historic availability',
         aggregation='mean',
         unit='LC classes',
         gee_path='users/openforisearthmap/CCI_LC/ESACCI-LC-L4-LCCS-Map-300m-P1Y-1992_2018_v2_1_1',
@@ -387,7 +386,7 @@ class BenefitSpatialVariable(SpatialVariable):
         scale=300
     )
 
-class ClimateSpatialVariable(SpatialVariable):
+class ClimateSpatialVariable:
 
     DRY_DAYS = SpatialData(
         name='dryDays',
@@ -431,7 +430,7 @@ class ClimateSpatialVariable(SpatialVariable):
     MEAN_ANNUAL_TEMPERATURE = SpatialData(
         name='meanAnnualTemp',
         full_name='Mean Annual Temperature',
-        description='Mean Annual Temeprature',
+        description='Mean Annual Temperature in degrees Celsius',
         aggregation='mean',
         unit='degrees C',
         gee_path="ECMWF/ERA5_LAND/DAILY_AGGR",
@@ -444,9 +443,9 @@ class ClimateSpatialVariable(SpatialVariable):
     TOTAL_ANNUAL_PRECIPITATION = SpatialData(
         name='totalAnnualPrecip',
         full_name='Total Annual Precipitation',
-        description='Total Annual Precipitation in mm',
+        description='Total Annual Precipitation in m',
         aggregation='mean',
-        unit='mm',
+        unit='m',
         gee_path="ECMWF/ERA5_LAND/DAILY_AGGR",
         alt_path='TBD',
         extraction_function=GEE.get_total_annual_precipitation,
@@ -456,7 +455,7 @@ class ClimateSpatialVariable(SpatialVariable):
 
     MEAN_NDVI_P95 = SpatialData(
         name='ndviP95',
-        full_name='NDVI 95',
+        full_name='NDVI',
         description='95th percentile score of annual NDVI',
         aggregation='mean',
         unit='NDVI index',
@@ -467,12 +466,12 @@ class ClimateSpatialVariable(SpatialVariable):
         scale=5000
     )
 
-class CountrySpatialVariable(SpatialVariable):
+class CountrySpatialVariable:
 
     GDP_PER_CAPITA = SpatialData(
         name='GDPPC',
         full_name='Global Domestic Product Per Capita per country',
-        description='GDPPC for project year',
+        description='Global Domestic Product Per Capita per country in USD',
         aggregation='Country value',
         unit='USD',
         gee_path='NY.GDP.PCAP.CD',
@@ -486,7 +485,7 @@ class CountrySpatialVariable(SpatialVariable):
     GDP_PER_CAPITA_PPP = SpatialData(
         name='GDPPC_PPP',
         full_name='Global Domestic Product Per Capita per country, PPP',
-        description='GDPPC for project year, PPP',
+        description='GDPPC for country, in International Dollars',
         aggregation='Country value',
         unit='USD',
         gee_path='NY.GDP.PCAP.PP.CD',
@@ -581,7 +580,7 @@ class CountrySpatialVariable(SpatialVariable):
         method='wb'
     )
 
-class OtherSpatialVariable(SpatialVariable):
+class OtherSpatialVariable:
     SENSLOPE_NDVI_P95_2018 = SpatialData(
         name='ndviP05Senslope',
         full_name='NDVI 95 Sen Slope',

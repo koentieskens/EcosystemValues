@@ -1,5 +1,5 @@
 import ee
-from src.variables.variables import Var
+from src.variables.variables import ModelVariable
 from src.variables.spatial_variable import BenefitSpatialVariable, ClimateSpatialVariable
 import geemap
 from tqdm import tqdm
@@ -9,11 +9,11 @@ ee.Initialize(project='ee-koentieskens')
 
 ecoRegions = ee.FeatureCollection('RESOLVE/ECOREGIONS/2017')
 
-variable = Var(ClimateSpatialVariable.MEAN_NDVI_P95)
-ndvi = Var(ClimateSpatialVariable.MEAN_NDVI_P95).variable.get_image(start_year=2018, end_year=2019)
-intactness =  Var(BenefitSpatialVariable.BIODIVERSITY_INTACTNESS).variable.get_image(year=2020)
-NPP_year = Var(BenefitSpatialVariable.NPP_YEAR).variable.get_image(year=2020)
-NPP_max = Var(BenefitSpatialVariable.NPP_MAX).variable.get_image(year=2020)
+variable = ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95)
+ndvi = ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95).variable.get_image(start_year=2018, end_year=2019)
+intactness =  ModelVariable(BenefitSpatialVariable.BIODIVERSITY_INTACTNESS).variable.get_image(year=2020)
+NPP_year = ModelVariable(BenefitSpatialVariable.NPP_YEAR).variable.get_image(year=2020)
+NPP_max = ModelVariable(BenefitSpatialVariable.NPP_MAX).variable.get_image(year=2020)
 
 NPP_share = NPP_year.divide(NPP_max)
 
@@ -42,7 +42,7 @@ def get_values(image, features, name):
 
 biomes = ecoRegions.aggregate_array('BIOME_NAME').distinct().getInfo()
 
-name = Var(ClimateSpatialVariable.MEAN_NDVI_P95).variable.name
+name = ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95).variable.name
 results = []
 for biome in tqdm(biomes[1:]):
     biome_ecoregions = ecoRegions.filter(ee.Filter.eq('BIOME_NAME', biome))

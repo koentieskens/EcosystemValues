@@ -1,33 +1,21 @@
 
 from typing import Union
+from dataclasses import dataclass
+from typing import Optional, Any
 from src.variables.land_cover import LandCoverGroup
-from src.variables.cost_input import CostInput
-from src.variables.ecosystem_service import EcosystemService
-from src.variables.nature_based_solutions import NBS
-from src.variables.global_layers import GlobalLayer
-from src.variables.spatial_variable import BenefitSpatialVariable, ClimateSpatialVariable, CountrySpatialVariable
-from src.variables.sub_biome import SubBiome
-from src.variables.value_type import ValueType
 
 
-class Var:
+@dataclass
+class ModelVariable:
+    variable: Union[str, Any]  # Can be string or domain object
+    coefficient: Optional[float] = None
+    ln: bool = False
+    ihs: bool = False
+    buffer: Optional[int] = None
+    value: float = 0
+    lc: LandCoverGroup = None
 
-    def __init__(self,
-                 variable: Union[
-                     CostInput, EcosystemService, NBS, GlobalLayer, BenefitSpatialVariable, ClimateSpatialVariable,
-                  CountrySpatialVariable, SubBiome, ValueType],
-                 ln:bool=False,
-                 ihs:bool=False,
-                 lc:LandCoverGroup=None,
-                 buffer:int=None,
-                 coefficient:float=None
-                 ):
-        self.variable = variable
-        self.ln = ln
-        self.ihs = ihs
-        self.lc = lc
-        self.buffer = buffer
-        self.coefficient = coefficient
-        self.value = 0
-
+    @property
+    def name(self):
+        return self.variable.name if hasattr(self.variable, 'name') else self.variable
 

@@ -96,19 +96,20 @@ class Predictions:
         elif variable.variable.method == 'lc':
             image = variable.variable.get_image(year=self.year)
             feature = ee.Feature(ee.Geometry.Point(lon, lat), {'radius': radius})
-            buffer = variable.variable.buffer
+            buffer = variable.buffer
             if not buffer:
                 buffer = 0
             buffer_size = Predictions.get_buffer_size(radius=radius, buffer=buffer)
             lcs = Predictions.get_lc(image, feature, buffer_size, variable.variable.scale)
-            relevant_lcs = sum(lcs.get(key, 0) for key in variable.lc.value[1])
+            relevant_lcs = sum(lcs.get(key, 0) for key in variable.lc.classes)
             header = variable.lc.get_name(buffer=buffer)
+            print(buffer)
             value = {header: relevant_lcs}
 
         else:
             image = variable.variable.get_image(year=self.year)
             feature = ee.Feature(ee.Geometry.Point(lon, lat), {'radius': radius})
-            buffer = variable.variable.buffer
+            buffer = variable.buffer
             if not buffer:
                 buffer = 0
             buffer_size = Predictions.get_buffer_size(radius=radius, buffer=buffer)

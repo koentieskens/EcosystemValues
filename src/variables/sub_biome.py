@@ -6,14 +6,12 @@ from dataclasses import dataclass
 class SubBiomeData(variable_template.Data):
     """Dataclass to store metadata for a variable. This template will be used to create spatial variables"""
 
-class SubBiomeVariable(SubBiomeData):
-
     def get_tooltip(self):
         return (
                 f"{self.name}\n\n"
                 f"{self.description}")
 
-class SubBiome(SubBiomeVariable):
+class SubBiome:
 
     TROPICAL_MIXED_FORESTS = SubBiomeData(
         name='Tropical_mixed_forest',

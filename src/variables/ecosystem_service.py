@@ -10,8 +10,6 @@ class EcosystemServiceData(variable_template.Data):
     SEAA_Code: str
     data_source: str
 
-class EcosystemServiceVariable(EcosystemServiceData):
-
     def get_tooltip(self):
         return (f"SEEA Classification\n\n"
                 f"Category: {self.SEEA_clas1} | "
@@ -19,7 +17,7 @@ class EcosystemServiceVariable(EcosystemServiceData):
                 f"{self.description}\n\n"
                 f"Value estimate based on: {self.data_source}")
 
-class EcosystemService(EcosystemServiceVariable):
+class EcosystemService:
 
     WOOD_PROVISION = EcosystemServiceData(
         name='Wood Provision',

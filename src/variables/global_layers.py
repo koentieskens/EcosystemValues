@@ -11,8 +11,6 @@ class GlobalLayerData( variable_template.Data):
     band: int
     bucket: str
 
-class GlobalLayerVariable(GlobalLayerData):
-
     @classmethod
     def to_dataframe(cls):
         """
@@ -43,7 +41,7 @@ class GlobalLayerVariable(GlobalLayerData):
         return pd.DataFrame(data)
 
 
-class GlobalLayer(GlobalLayerVariable):
+class GlobalLayer:
 
     RESTORATION_OPPORTUNITY_COST = GlobalLayerData(
         name="RESTORATION_OPPORTUNITY_COST",

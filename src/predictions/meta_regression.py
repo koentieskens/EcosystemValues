@@ -2,7 +2,7 @@ import math
 import numpy as np
 from ..models.benefit_models import IntensiveLandUse, Grassland, TropicalForest, TemparateForest
 from ..models.cost_models import IntensiveLandUse as IntensiveLandUseCost
-from src.variables.variables import Var
+from src.variables.variables import ModelVariable
 
 
 from typing import Union, List, Optional
@@ -28,8 +28,8 @@ class Predict:
     @staticmethod
     def predict_benefit(
             model_class: Union[IntensiveLandUse, Grassland, TropicalForest, TemparateForest],
-            ecosystem_service:Var,
-            value_type: Var,
+            ecosystem_service:ModelVariable,
+            value_type: ModelVariable,
             area_hectares: float) -> Optional[float]:
         """Predict ecosystem service value using regression equation"""
         try:
@@ -110,8 +110,8 @@ class Predict:
     @staticmethod
     def predict_cost(
             model_class: Union[IntensiveLandUseCost],
-            nbs: Var,
-            value_type: Var,
+            nbs: ModelVariable,
+            value_type: ModelVariable,
             area_hectares: float,
             latitude: float) -> Optional[float]:
         """Predict ecosystem service value using regression equation"""

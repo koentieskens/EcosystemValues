@@ -544,7 +544,10 @@ class EcoApp:
                 options.append((var_key, display_name, pvar_obj))
 
             # Create radio button selection
-            help_texts = [p.variable.get_tooltip() for p in self.model_class.SUB_BIOMES]
+            try:
+                help_texts = [p.variable.get_tooltip() for p in self.model_class.SUB_BIOMES]
+            except AttributeError:
+                help_texts = ['']
             selected_option = st.radio(
                 "Select Sub-biome:",
                 options=[opt[1] for opt in options],  # Display names
@@ -585,15 +588,17 @@ class EcoApp:
 
 
             for var_obj in self.model_class.VARIABLES:
-                display_name, tooltip = St_Utils.get_variable_display_info(var_obj)
 
                 # Get the form field key
-                if hasattr(var_obj, 'lc') and var_obj.lc is not None:
-                    buffer = var_obj.variable.buffer if var_obj.variable.buffer else 0
-                    var_key = var_obj.lc.get_name(buffer=buffer)
+                if var_obj.lc is not None:
+                    display_name = var_obj.lc.full_name
+                    var_key = var_obj.lc.get_name(var_obj.buffer)
+                    tool_tip = var_obj.variable.get_tooltip()
                 else:
+                    display_name = var_obj.variable.full_name
+                    tool_tip = var_obj.variable.get_tooltip()
                     var_key = var_obj.variable.name
-
+                print(var_key)
                 default_value = 0.0
                 session_key = f"var_{var_key}_{self.ecosystem_type}"
 
@@ -614,7 +619,7 @@ class EcoApp:
                     #value=st.session_state[session_key],
                     step=0.01,
                     format="%.2f",
-                    help=tooltip if tooltip else None,
+                    help=tool_tip if tool_tip else None,
                     key=session_key
                 )
 
@@ -627,7 +632,7 @@ class EcoApp:
                             f"Extracting values from Google Earth Engine for {self.lat:.6f}, {self.lon:.6f} {self.area}... "):
                         extracted_values, error = St_Utils.extract_values(self.model_class, self.lat, self.lon,
                                                                           self.area)
-
+                        print(extracted_values)
                         if error:
                             st.error(f"Extraction failed: {error}")
                         else:
