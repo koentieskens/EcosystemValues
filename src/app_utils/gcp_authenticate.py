@@ -44,10 +44,10 @@ if __name__ == '__main__':
 
     gcp_auth = AuthenticateServiceAccount(gcp_credentials)
     gcp_auth.set_credentials()
-    from src.variables.global_layers import GCSLayer
+    from src.variables.global_layers import GlobalLayer
     from src.utils.spatial import Spatial
 
-    op_cost = GCSLayer.SE_PLAN_OPPORTUNITY_COST
+    op_cost = GlobalLayer.SE_PLAN_OPPORTUNITY_COST
     bucket_name = "nbs-tool-public"
     gcs_path = f"gs://{bucket_name}/{op_cost.gcs_path}"
     lon = 16

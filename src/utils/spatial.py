@@ -71,7 +71,6 @@ class Spatial:
             DataFrame with 'country' and 'value' columns
         """
 
-
         # Create the target column name
         target_col = f'YR{target_year}'
 

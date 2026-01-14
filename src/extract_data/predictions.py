@@ -5,9 +5,6 @@ import pandas as pd
 from iso3166 import countries
 from datetime import datetime
 from ..utils.spatial import Spatial
-from ..variables.variables import Var, CountryVariable, BenefitVariable, ClimateVariable
-from ..variables.land_cover import LandCoverGroup
-
 
 
 class Predictions:
@@ -85,53 +82,38 @@ class Predictions:
 
     def get_wb(self, variable):
 
-        df = variable.var.get_image(countries=[self.country])
+        df = variable.variable.get_image(countries=[self.country])
         df_val = Spatial.get_country_year_data(df, self.year)
         val = df_val.iloc[0]['value'].item()
-        var = variable.var.name
+        var = variable.variable.name
         d = {var: val}
         return d
 
 
     def get_value(self, variable, lat, lon, radius=100):
-        if variable.var.method == 'wb':
+        if variable.variable.method == 'wb':
             value =  self.get_wb(variable)
-        elif variable.var.method == 'lc':
-            image = variable.var.get_image(year=self.year)
+        elif variable.variable.method == 'lc':
+            image = variable.variable.get_image(year=self.year)
             feature = ee.Feature(ee.Geometry.Point(lon, lat), {'radius': radius})
-            buffer = variable.var.buffer
+            buffer = variable.variable.buffer
             if not buffer:
                 buffer = 0
             buffer_size = Predictions.get_buffer_size(radius=radius, buffer=buffer)
-            lcs = Predictions.get_lc(image, feature, buffer_size, variable.var.scale)
+            lcs = Predictions.get_lc(image, feature, buffer_size, variable.variable.scale)
             relevant_lcs = sum(lcs.get(key, 0) for key in variable.lc.value[1])
             header = variable.lc.get_name(buffer=buffer)
             value = {header: relevant_lcs}
 
         else:
-            image = variable.var.get_image(year=self.year)
+            image = variable.variable.get_image(year=self.year)
             feature = ee.Feature(ee.Geometry.Point(lon, lat), {'radius': radius})
-            buffer = variable.var.buffer
+            buffer = variable.variable.buffer
             if not buffer:
                 buffer = 0
             buffer_size = Predictions.get_buffer_size(radius=radius, buffer=buffer)
-            value = Predictions.reduce_region(image, feature, buffer_size, variable.var.scale)
-            value = {k: v * variable.var.multiplier for k, v in value.items()}
+            value = Predictions.reduce_region(image, feature, buffer_size, variable.variable.scale)
+            value = {k: v * variable.variable.multiplier for k, v in value.items()}
 
         return value
 
-
-if __name__ == "__main__":
-
-    variables = [
-        Var(BenefitVariable.ACCESSIBILITY, ln=True, buffer=10000),
-        Var(BenefitVariable.ELEVATION),
-        Var(BenefitVariable.LAND_COVER, buffer=10000, lc=LandCoverGroup.FOREST),
-    ]
-
-    ee.Authenticate()
-    ee.Initialize(project='ee-koentieskens')
-
-    p = Predictions(variables, 52.15, 5.15, radius=100)
-    p.get_values()
-    print(p.values_dict)

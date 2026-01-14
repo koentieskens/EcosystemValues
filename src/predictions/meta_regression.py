@@ -1,8 +1,12 @@
 import math
+import numpy as np
 from ..models.benefit_models import IntensiveLandUse, Grassland, TropicalForest, TemparateForest
-from ..variables.variables import BenefitVariable, ClimateVariable, CountryVariable, Var
+from ..models.cost_models import IntensiveLandUse as IntensiveLandUseCost
+from src.variables.variables import Var
+
+
 from typing import Union, List, Optional
-from ..variables.project_variables import ProjectVariables, Pvar, EcosystemServices
+
 
 class Predict:
     """Calculate ecosystem service value using regression equation"""
@@ -12,10 +16,20 @@ class Predict:
         return math.log(value + 1) if (value + 1) > 0 else 0.0
 
     @staticmethod
-    def predict_value(
+    def ihs(value: float) -> float:
+        """return arcsinh of value"""
+        return np.arcsinh(value)
+
+    @staticmethod
+    def ihs_reverse(value: float) -> float:
+        """return asinh of value"""
+        return np.sinh(value)
+
+    @staticmethod
+    def predict_benefit(
             model_class: Union[IntensiveLandUse, Grassland, TropicalForest, TemparateForest],
-            ecosystem_service:Pvar,
-            value_type: Pvar,
+            ecosystem_service:Var,
+            value_type: Var,
             area_hectares: float) -> Optional[float]:
         """Predict ecosystem service value using regression equation"""
         try:
@@ -74,7 +88,7 @@ class Predict:
             if model_class.INTERACTIONS:
                 for interaction in model_class.INTERACTIONS:
                     es_type = interaction[0]
-                    if ecosystem_service.variable.value[2] != es_type:
+                    if ecosystem_service.variable.SEEA_clas1 != es_type:
                         continue
                     var_obj = interaction[1]
                     if hasattr(var_obj, 'ln') and var_obj.ln:
@@ -87,6 +101,64 @@ class Predict:
                     regression_sum += est
 
             ecosystem_value = math.exp(regression_sum)
+
+            return ecosystem_value
+
+        except Exception as e:
+            raise e
+
+    @staticmethod
+    def predict_cost(
+            model_class: Union[IntensiveLandUseCost],
+            nbs: Var,
+            value_type: Var,
+            area_hectares: float,
+            latitude: float) -> Optional[float]:
+        """Predict ecosystem service value using regression equation"""
+        try:
+            # Get model constants
+            intercept = model_class.CONSTANTS.get('Intercept')
+            area_ln_coef = model_class.CONSTANTS.get('Area_ha_ln')
+
+
+            # Start with intercept
+            regression_sum = intercept
+
+            # Add area term: ln(area_hectares) * area_ln_coefficient
+            est = Predict.ihs(area_hectares) * area_ln_coef
+            regression_sum += est
+
+            # Add model variables
+            for var_obj in model_class.VARIABLES:
+
+                if hasattr(var_obj, 'ln') and var_obj.ln:
+                    value = Predict.ihs(var_obj.value)
+
+                else:
+                    value = var_obj.value
+
+                est = var_obj.coefficient * value
+                regression_sum += est
+
+            # add nbs
+            value = 1
+            coefficient = nbs.coefficient
+            est = coefficient * value
+            regression_sum += est
+
+            # add interactions
+            if model_class.QUADRATICS:
+                for quadratic in model_class.QUADRATICS:
+                    if hasattr(quadratic, 'ln') and quadratic.ln:
+                        value = (Predict.ihs(quadratic.value))**2
+                    else:
+                        value = quadratic.value **2
+
+                    coefficient = quadratic.coefficient
+                    est = coefficient * value
+                    regression_sum += est
+
+            ecosystem_value = Predict.ihs_reverse(regression_sum)
 
             return ecosystem_value
 

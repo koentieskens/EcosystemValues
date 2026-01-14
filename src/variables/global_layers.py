@@ -1,7 +1,77 @@
-from .spatial_variable import GlobalLayer, GlobalLayerData
+from dataclasses import dataclass
+from src.variables import variable_template
+
+@dataclass
+class GlobalLayerData( variable_template.Data):
+    """Dataclass to store metadata for a variable. This template will be used to create spatial variables"""
+    unit: str
+    gcs_path: str
+    source: str
+    scale: int
+    band: int
+    bucket: str
+
+class GlobalLayerVariable(variable_template.Variable):
+
+    @property
+    def gcs_path(self):
+        """Get the GEE path of the variable."""
+        return self.value.gcs_path
+
+    @property
+    def scale(self):
+        """
+        Returns desired scale of the variable
+        """
+        return self.value.scale
+
+    @property
+    def unit(self):
+        """Get the unit of measurement for the variable."""
+        return self.value.unit
+
+    @property
+    def source(self):
+        """Get the data source/reference for the variable."""
+        return self.value.source
+
+    @property
+    def band(self):
+        """Get the band of the variable."""
+        return self.value.band
+
+    @property
+    def bucket(self):
+        """Get the bucket where the data is stored in GCS."""
+        return self.value.bucket
+
+    @classmethod
+    def to_dataframe(cls):
+        """
+        Create a pandas DataFrame with one row for each enum member and a column for each parameter.
+
+        Returns:
+            pd.DataFrame: DataFrame containing all enum members and their properties
+        """
+        import pandas as pd
+
+        data = []
+        for member in cls:
+            row = {
+                'name': member.value.name,
+                'full_name': member.value.full_name,
+                'description': getattr(member.value, 'description', None),
+                'unit': getattr(member.value, 'unit', None),
+                'gcs_path': member.value.gee_path,
+                'source': getattr(member.value, 'source', None),
+                'scale': member.value.scale,
+            }
+            data.append(row)
+
+        return pd.DataFrame(data)
 
 
-class GCSLayer(GlobalLayer):
+class GlobalLayer(GlobalLayerVariable):
 
     RESTORATION_OPPORTUNITY_COST = GlobalLayerData(
         name="RESTORATION_OPPORTUNITY_COST",

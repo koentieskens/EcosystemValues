@@ -511,14 +511,15 @@ class EcoApp:
         if hasattr(self.model_class, 'ECOSYSTEM_SERVICES'):
             cols = st.columns(2)
             for i, pvar_obj in enumerate(self.model_class.ECOSYSTEM_SERVICES):
-                display_name = St_Utils.get_project_variable_display_info(pvar_obj)
+                display_name = pvar_obj.variable.name
 
                 var_key = pvar_obj.variable.name
 
                 with cols[i % 2]:
                     pvar_obj.value = st.checkbox(
                         display_name,
-                        key=f"proj_{var_key}_{self.ecosystem_type}"
+                        key=f"proj_{var_key}_{self.ecosystem_type}",
+                        help=pvar_obj.variable.get_tooltip()
                     )
         if hasattr(self.model_class, 'SIIKAMAKI'):
             cols = st.columns(2)
@@ -538,16 +539,17 @@ class EcoApp:
             # Create a list of options with display names
             options = []
             for pvar_obj in self.model_class.SUB_BIOMES:
-                display_name = St_Utils.get_project_variable_display_info(pvar_obj)
+                display_name = pvar_obj.variable.full_name
                 var_key = pvar_obj.variable.name
                 options.append((var_key, display_name, pvar_obj))
 
             # Create radio button selection
+            help_texts = [p.variable.get_tooltip() for p in self.model_class.SUB_BIOMES]
             selected_option = st.radio(
                 "Select Sub-biome:",
                 options=[opt[1] for opt in options],  # Display names
                 key=f"sub_biome_{self.ecosystem_type}",
-                help="Choose the sub-biome that best describes your study area"
+                help="Choose the sub-biome that best describes your study area"+ "\n\n".join(help_texts)
             )
 
             # Clear all sub_biomes first
@@ -587,10 +589,10 @@ class EcoApp:
 
                 # Get the form field key
                 if hasattr(var_obj, 'lc') and var_obj.lc is not None:
-                    buffer = var_obj.var.buffer if var_obj.var.buffer else 0
+                    buffer = var_obj.variable.buffer if var_obj.variable.buffer else 0
                     var_key = var_obj.lc.get_name(buffer=buffer)
                 else:
-                    var_key = var_obj.var.name
+                    var_key = var_obj.variable.name
 
                 default_value = 0.0
                 session_key = f"var_{var_key}_{self.ecosystem_type}"
@@ -663,9 +665,9 @@ class EcoApp:
                     ess = [es for es in self.model_class.ECOSYSTEM_SERVICES if es.value]
 
                     for es in ess:
-                        predicted_value = Predict.predict_value(self.model_class, es, vt, self.area)
-                        predicted_values[es.variable.value[1]] = predicted_value
-                    prediction_sets[vt.variable.value[1]] = predicted_values
+                        predicted_value = Predict.predict_benefit(self.model_class, es, vt, self.area)
+                        predicted_values[es.variable.name] = predicted_value
+                    prediction_sets[vt.variable.full_name] = predicted_values
                 st.success("✅ Calculation Complete!")
                 siikamaki_benefits = None
                 if hasattr(self.model_class, 'SIIKAMAKI'):
@@ -714,11 +716,13 @@ class EcoApp:
 
     def display_benefits(self, predicted_sets, siikamaki_benefits=None):
         # Display results
-        tab_names = [t.variable.value[1] for t in self.model_class.VALUE_TYPES]
+        tab_names = [t.variable.full_name for t in self.model_class.VALUE_TYPES]
 
         tabs = st.tabs(tab_names)
-        for tab_name, tab in zip(tab_names, tabs):
+        for i, (tab_name, tab) in enumerate(zip(tab_names, tabs)):
             with tab:
+                value_type = self.model_class.VALUE_TYPES[i]
+                st.info(f"{value_type.variable.get_tooltip()}")
                 cols = st.columns(2)
                 predicted_values = predicted_sets[tab_name]
 
@@ -726,15 +730,16 @@ class EcoApp:
                     for benefit in siikamaki_benefits:
                         predicted_values.update(benefit)
                 total_value = 0.0
-                for i, key in enumerate(predicted_values):
-                    with cols[i % 2]:
+                for j, key in enumerate(predicted_values):
+                    with cols[j % 2]:
                         st.metric(
                             label=key,
-                            value=f"${predicted_values[key]:,.2f}",
+                            value=f"${predicted_values[key]:,.2f} per ha",
                             help="USD per hectare per year"
                         )
                     total_value += predicted_values[key]
-                st.subheader(f"Total Value: ${total_value:,.2f}")
+                st.markdown(f"<h3 style='text-align: right;'>Total Value per ha: ${total_value:,.2f}</h3>",
+                            unsafe_allow_html=True)
 
     def display_costs(self, cost_per_ha):
         tv = 0
@@ -906,6 +911,7 @@ def main():
     # -------------------- Benefits -------------------- #
     with st.container(key='benefits'):
         st.header('Ecosystem Benefits')
+        st.markdown("---")
         col1, col2 = st.columns([1, 1])
         with col1:
             st.subheader("Ecosystem Services")
@@ -919,6 +925,11 @@ def main():
 
         with col2:
             st.subheader("Benefit Estimates")
+            st.markdown("""
+                        Benefits are expressed in Current USD per hectare per year. Estimateions were done using meta regressions
+                        base don es-valuation studies using ESVD data (Brander et al., 2025) and a recent meta regression model. for forest ecosystem 
+                        services (Siikamaki et al., 2024)
+                        """)
             if prediction_sets:
                 st.session_state.displayed_benefits = True
                 st.session_state.benefits_data = prediction_sets
@@ -928,15 +939,18 @@ def main():
     # -------------------- Costs -------------------- #
     with st.container(key='costs'):
         st.header('Intervention Costs')
+        st.markdown("---")
         col1, col2 = st.columns([1, 1])
         with col1:
-            st.subheader("Cost")
+            st.subheader("Type of Cost")
+
             st.markdown("""Select which costs you want to include in the cost assessment.""")
             st.session_state.app.cost_variables_menu()
             cost_per_ha = st.session_state.app.calculate_costs()
 
         with col2:
-            # Update costs data whenever cost_per_ha changes
+            st.subheader("Cost Estimates")
+
             if cost_per_ha:
                 st.session_state.displayed_costs = True
                 st.session_state.costs_data = cost_per_ha

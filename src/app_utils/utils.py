@@ -18,7 +18,7 @@ class St_Utils:
             if hasattr(var_obj, 'lc') and var_obj.lc is not None:
                 return var_obj.lc.value[2], var_obj.lc.value[2]
 
-            variable_enum = var_obj.var
+            variable_enum = var_obj.variable
             if hasattr(variable_enum.value, 'description'):
                 name = variable_enum.value.description
                 tooltip = variable_enum.value.description
@@ -28,7 +28,7 @@ class St_Utils:
 
             return name, tooltip
         except Exception as e:
-            return str(var_obj.var).replace('_', ' ').title(), ""
+            return str(var_obj.variable).replace('_', ' ').title(), ""
 
     @staticmethod
     def get_project_variable_display_info(project_var_obj):
