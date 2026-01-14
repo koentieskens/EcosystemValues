@@ -6,17 +6,14 @@ class NBSData(variable_template.Data):
     """Dataclass to store metadata for a variable. This template will be used to create spatial variables"""
     data_source: str
 
-class NBSVariable(variable_template.Variable):
+class NBSVariable(NBSData):
 
-    @property
-    def data_source(self):
-        return self.value.data_source
 
     def get_tooltip(self):
         return (f"NBS Classification\n\n"
-                f"Name: {self.value.name}"
-                f"{self.value.description}\n\n"
-                f"Value estimate based on: {self.value.data_source}")
+                f"Name: {self.name}"
+                f"{self.description}\n\n"
+                f"Value estimate based on: {self.data_source}")
 
 
 class NBS(NBSVariable):

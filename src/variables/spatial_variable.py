@@ -18,15 +18,15 @@ class SpatialData(variable_template.Data):
     buffer: int | None = None
 
 
-class SpatialVariable(variable_template.Variable):
+class SpatialVariable(SpatialData):
     def get_image(self, **kwargs):
         """Get the image for the variable."""
-        return self.value.extraction_function(gee_path=self.gee_path, name=self.name, **kwargs)
+        return self.extraction_function(gee_path=self.gee_path, name=self.name, **kwargs)
 
     @property
     def name(self):
         """Get the name of the variable used in further processing."""
-        name = self.value.name
+        name = self.name
         if self.buffer is not None:
             if self.buffer == 10000:
                 name += '_buf_A'
@@ -39,71 +39,6 @@ class SpatialVariable(variable_template.Variable):
 
         return name
 
-    @property
-    def alt_path(self):
-        """
-        Get the GEE path of the alternative source. This alternative source is what was originally in the FAO code
-        If it differs from gee_path I (koen) have changed it to a public source
-        """
-        return self.value.alt_path
-
-    @property
-    def gee_path(self):
-        """Get the GEE path of the variable."""
-        return self.value.gee_path
-
-    @property
-    def extraction_function(self):
-        """Get the extraction function of the variable."""
-        return self.value.extraction_function
-
-    @property
-    def scale(self):
-        """
-        Returns desired scale of the variable
-        """
-        return self.value.scale
-
-    @property
-    def multiplier(self):
-        """
-        Returns desired scale of the variable
-        """
-        try:
-            multiplier = self.value.multiplier
-        except:
-            multiplier = None
-        return multiplier
-
-    @property
-    def aggregation(self):
-        """Get the aggregation method for the variable."""
-        return self.value.aggregation
-
-    @property
-    def unit(self):
-        """Get the unit of measurement for the variable."""
-        return self.value.unit
-
-    @property
-    def source(self):
-        """Get the data source/reference for the variable."""
-        return self.value.source
-
-    @property
-    def method(self):
-        """Get the data extracting method group for the variable."""
-        return self.value.method
-
-    @property
-    def buffer(self):
-        """Get the buffer witdth for the variable."""
-        return self.value.buffer
-
-    @buffer.setter
-    def buffer(self, value):
-        """Set the buffer witdth for the variable."""
-        self.value.buffer = value
 
     @classmethod
     def to_dataframe(cls):
@@ -115,23 +50,27 @@ class SpatialVariable(variable_template.Variable):
         """
         import pandas as pd
 
+        variables = [getattr(cls, attr) for attr in dir(cls)
+                     if not attr.startswith('_') and not callable(getattr(cls, attr))]
+
         data = []
-        for member in cls:
-            row = {
-                'name': member.value.name,
-                'full_name': member.value.full_name,
-                'description': getattr(member.value, 'description', None),
-                'aggregation': getattr(member.value, 'aggregation', None),
-                'unit': getattr(member.value, 'unit', None),
-                'gee_path': member.value.gee_path,
-                'alt_path': member.value.alt_path,
-                'extraction_function': member.value.extraction_function.__name__ if hasattr(
-                    member.value.extraction_function, '__name__') else str(member.value.extraction_function),
-                'source': getattr(member.value, 'source', None),
-                'scale': member.value.scale,
-                'multiplier': getattr(member.value, 'multiplier', None)
-            }
-            data.append(row)
+        for var in variables:
+            if hasattr(var, 'name'):
+                row = {
+                    'name': var.value.name,
+                    'full_name': var.value.full_name,
+                    'description': getattr(var.value, 'description', None),
+                    'aggregation': getattr(var.value, 'aggregation', None),
+                    'unit': getattr(var.value, 'unit', None),
+                    'gee_path': var.value.gee_path,
+                    'alt_path': var.value.alt_path,
+                    'extraction_function': var.value.extraction_function.__name__ if hasattr(
+                        var.value.extraction_function, '__name__') else str(var.value.extraction_function),
+                    'source': getattr(var.value, 'source', None),
+                    'scale': var.value.scale,
+                    'multiplier': getattr(var.value, 'multiplier', None)
+                }
+                data.append(row)
 
         return pd.DataFrame(data)
 

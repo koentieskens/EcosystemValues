@@ -10,34 +10,14 @@ class EcosystemServiceData(variable_template.Data):
     SEAA_Code: str
     data_source: str
 
-class EcosystemServiceVariable(variable_template.Variable):
-
-    @property
-    def data_source(self):
-        return self.value.data_source
-
-    @property
-    def SEEA_clas1(self):
-        return self.value.SEEA_clas1
-
-    @property
-    def SEEA_clas2(self):
-        return self.value.SEEA_clas2
-
-    @property
-    def SEEA_clas3(self):
-        return self.value.SEEA_clas3
-
-    @property
-    def SEAA_Code(self):
-        return self.value.SEAA_Code
+class EcosystemServiceVariable(EcosystemServiceData):
 
     def get_tooltip(self):
         return (f"SEEA Classification\n\n"
-                f"Category: {self.value.SEEA_clas1} | "
-                f"Subtype: {self.value.SEEA_clas3}\n\n"
-                f"{self.value.description}\n\n"
-                f"Value estimate based on: {self.value.data_source}")
+                f"Category: {self.SEEA_clas1} | "
+                f"Subtype: {self.SEEA_clas3}\n\n"
+                f"{self.description}\n\n"
+                f"Value estimate based on: {self.data_source}")
 
 class EcosystemService(EcosystemServiceVariable):
 

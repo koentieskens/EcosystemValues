@@ -11,39 +11,7 @@ class GlobalLayerData( variable_template.Data):
     band: int
     bucket: str
 
-class GlobalLayerVariable(variable_template.Variable):
-
-    @property
-    def gcs_path(self):
-        """Get the GEE path of the variable."""
-        return self.value.gcs_path
-
-    @property
-    def scale(self):
-        """
-        Returns desired scale of the variable
-        """
-        return self.value.scale
-
-    @property
-    def unit(self):
-        """Get the unit of measurement for the variable."""
-        return self.value.unit
-
-    @property
-    def source(self):
-        """Get the data source/reference for the variable."""
-        return self.value.source
-
-    @property
-    def band(self):
-        """Get the band of the variable."""
-        return self.value.band
-
-    @property
-    def bucket(self):
-        """Get the bucket where the data is stored in GCS."""
-        return self.value.bucket
+class GlobalLayerVariable(GlobalLayerData):
 
     @classmethod
     def to_dataframe(cls):
@@ -55,18 +23,22 @@ class GlobalLayerVariable(variable_template.Variable):
         """
         import pandas as pd
 
+        variables = [getattr(cls, attr) for attr in dir(cls)
+                     if not attr.startswith('_') and not callable(getattr(cls, attr))]
+
         data = []
-        for member in cls:
-            row = {
-                'name': member.value.name,
-                'full_name': member.value.full_name,
-                'description': getattr(member.value, 'description', None),
-                'unit': getattr(member.value, 'unit', None),
-                'gcs_path': member.value.gee_path,
-                'source': getattr(member.value, 'source', None),
-                'scale': member.value.scale,
-            }
-            data.append(row)
+        for var in variables:
+            if hasattr(var, 'name'):  # Only include your data objects
+                row = {
+                    'name': var.name,
+                    'full_name': var.full_name,
+                    'description': getattr(var, 'description', None),
+                    'unit': getattr(var, 'unit', None),
+                    'gcs_path': getattr(var, 'gee_path', None),
+                    'source': getattr(var, 'source', None),
+                    'scale': getattr(var, 'scale', None),
+                }
+                data.append(row)
 
         return pd.DataFrame(data)
 

@@ -7,12 +7,12 @@ class ValueTypeData(variable_template.Data):
     """Dataclass to store metadata for a variable. This template will be used to create spatial variables"""
     pass
 
-class ValueTypeVariable(variable_template.Variable):
+class ValueTypeVariable(ValueTypeData):
 
     def get_tooltip(self):
         return (
-                f"{self.value.full_name}\n\n"
-                f"{self.value.description}")
+                f"{self.full_name}\n\n"
+                f"{self.description}")
 
 class ValueType(ValueTypeVariable):
     TOTAL_FLOW = ValueTypeData(
