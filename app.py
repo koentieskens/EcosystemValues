@@ -40,10 +40,10 @@ class EcoApp:
 
             col1, col2 = st.columns([2, 1])
             with col1:
-                st.title("Ecosystem Valuation Tool")
+                st.title("NBS Valuation Tool")
 
             with col2:
-                img_base64 = self.ui.get_base64_image("src/images/NBS_GFDRR_Admin_WBG_2.avif")
+                img_base64 = self.ui.get_base64_image("src/images/NBS.png")
                 st.markdown("""
                     <style>
                     .bottom-align {

@@ -387,7 +387,7 @@ class Sidebar:
 
     def title_and_about(self):
         """Title and about information section"""
-        st.title("🌱 NBS Valuation Tool")
+        st.title("NBS Valuation Tool")
 
         with st.expander("ℹ️ About this tool"):
             st.markdown("""
@@ -486,7 +486,7 @@ class Sidebar:
 
     def download_csv_button(self):
         """Download CSV with variables, benefits, and costs"""
-        st.subheader("📥 Export Results")
+        st.subheader("Export Results")
 
         # Check if we have enough data to export
         has_location = ssm.LOCATION_ACTIVATED.get()
@@ -495,7 +495,7 @@ class Sidebar:
         has_calculations = ssm.BENEFITS_UPDATED.get()
 
         if has_location and has_variables and has_calculations:
-            if st.button("📊 Download CSV",
+            if st.button("Download CSV",
                          use_container_width=True,
                          type="primary"):
                 csv_data = self._generate_csv_data()
@@ -519,7 +519,7 @@ class Sidebar:
 
     def website_image_link(self):
         """Display image with link to website"""
-        st.subheader("🔗 Learn More")
+
 
         # You'll need to specify the actual image path and website URL
         image_path = "src/images/NBS_GFDRR_Admin_WBG_2.avif"  # Adjust path as needed
@@ -538,10 +538,7 @@ class Sidebar:
                 unsafe_allow_html=True
             )
 
-            st.markdown(
-                f"[🌐 Visit our website]({website_url})",
-                unsafe_allow_html=True
-            )
+
 
         except FileNotFoundError:
             # Fallback if image not found
