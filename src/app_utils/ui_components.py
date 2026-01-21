@@ -522,7 +522,7 @@ class Sidebar:
 
 
         # You'll need to specify the actual image path and website URL
-        image_path = "src/images/NBS_GFDRR_Admin_WBG_2.avif"  # Adjust path as needed
+        image_path = "src/images/NBS.PNG"  # Adjust path as needed
         website_url = "https://www.naturebasedsolutions.org"  # Replace with actual URL
 
         try:
