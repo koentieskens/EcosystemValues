@@ -43,7 +43,7 @@ class EcoApp:
                 st.title("NBS Valuation Tool")
 
             with col2:
-                img_base64 = self.ui.get_base64_image("src/images/NBS.png")
+                img_base64 = self.ui.get_base64_image("src/images/NBS_GFDRR_Admin_WBG_2.avif")
                 st.markdown("""
                     <style>
                     .bottom-align {
