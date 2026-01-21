@@ -1,7 +1,7 @@
 import math
 import numpy as np
-from ..models.benefit_models import IntensiveLandUse, Grassland, TropicalForest, TemparateForest
-from ..models.cost_models import IntensiveLandUse as IntensiveLandUseCost
+from src.models.benefit_models import IntensiveLandUse, Grassland, TropicalForest, TemparateForest
+from src.models.cost_models import IntensiveLandUseCost
 from src.variables.variables import ModelVariable
 
 
@@ -111,45 +111,59 @@ class Predict:
     def predict_cost(
             model_class: Union[IntensiveLandUseCost],
             nbs: ModelVariable,
-            value_type: ModelVariable,
             area_hectares: float,
-            latitude: float) -> Optional[float]:
+            latitude: float,
+            est_days:int =10,
+            main_days:int =50) -> Optional[float]:
         """Predict ecosystem service value using regression equation"""
         try:
+            for var in model_class.INPUT_VARIABLES:
+                if var.name == 'Latitude':
+                    var.value = abs(latitude)
+                if var.name == 'Establishment_Days':
+                    var.value = est_days
+                if var.name == 'Maintenance_Days':
+                    var.value = main_days
+
+            model_class.update_quadratics_values()
+
             # Get model constants
             intercept = model_class.CONSTANTS.get('Intercept')
             area_ln_coef = model_class.CONSTANTS.get('Area_ha_ln')
 
-
             # Start with intercept
             regression_sum = intercept
+            eq = f"{intercept} (INT)"
 
             # Add area term: ln(area_hectares) * area_ln_coefficient
             est = Predict.ihs(area_hectares) * area_ln_coef
             regression_sum += est
+            eq += f"+ {est} (AREA:{area_hectares:.2f} ha)"
 
+            variables = model_class.INPUT_VARIABLES + model_class.VARIABLES
             # Add model variables
-            for var_obj in model_class.VARIABLES:
+            for var_obj in variables:
 
-                if hasattr(var_obj, 'ln') and var_obj.ln:
+                if hasattr(var_obj, 'ihs') and var_obj.ihs:
                     value = Predict.ihs(var_obj.value)
-
                 else:
                     value = var_obj.value
 
                 est = var_obj.coefficient * value
                 regression_sum += est
+                eq += f"+ {est}, {var_obj.name}:{var_obj.value:.2f}"
 
             # add nbs
             value = 1
             coefficient = nbs.coefficient
             est = coefficient * value
             regression_sum += est
+            eq += f"+ {est}"
 
             # add interactions
             if model_class.QUADRATICS:
                 for quadratic in model_class.QUADRATICS:
-                    if hasattr(quadratic, 'ln') and quadratic.ln:
+                    if hasattr(quadratic, 'ihs') and quadratic.ihs:
                         value = (Predict.ihs(quadratic.value))**2
                     else:
                         value = quadratic.value **2
@@ -157,10 +171,12 @@ class Predict:
                     coefficient = quadratic.coefficient
                     est = coefficient * value
                     regression_sum += est
+                    eq += f"+ {est}"
 
-            ecosystem_value = Predict.ihs_reverse(regression_sum)
-
-            return ecosystem_value
+            nbs_cost = Predict.ihs_reverse(regression_sum)
+            print(nbs_cost)
+            print(eq)
+            return nbs_cost
 
         except Exception as e:
             raise e

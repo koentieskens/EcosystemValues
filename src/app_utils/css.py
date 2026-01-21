@@ -15,6 +15,9 @@ class CSS:
 
     #backdrop - filter: blur(15
     #px);
+    WELCOME = f"""
+    .st-key-welcome {CONTAINER_3}
+    """
 
     LOCATION = f"""
     .st-key-location {CONTAINER_3}
@@ -29,8 +32,8 @@ class CSS:
     """
 
     COST = f"""
-        .st-key-costs {CONTAINER_3}
-        """
+    .st-key-costs {CONTAINER_3}
+    """
 
     ESS = f"""
     .st-key-ess {CONTAINER_3}
@@ -73,4 +76,88 @@ class CSS:
     }
     </style>
     """
+
+    GOOGLE_FONT = """
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        html, body, [class*="css"] {
+            font-family: 'Inter', sans-serif;
+        }
+    
+    """
+
+    TAB_LAYOUT = """
+                <style>
+                    /* Main container for tabs */
+                    .stTabs [data-baseweb="tab-list"] {
+                        gap: 2px;
+                    }
+
+                    /* Individual tab appearance */
+                    .stTabs [data-baseweb="tab"] {
+                        height: 50px;
+                        white-space: pre-wrap;
+                        background-color: #F0F2F6; /* Background for inactive tabs */
+                        border-radius: 8px 8px 0px 0px; /* Rounded top corners */
+                        gap: 1px;
+                        padding-top: 3px;
+                        padding-bottom: 3px;
+                        padding-left: 20px;
+                        padding-right: 20px;
+                        border: 1px solid #ddd; /* Add a border to all tabs */
+                        border-bottom: none; /* Remove bottom border for tab itself */
+                    }
+
+                    /* Active (selected) tab appearance */
+                    .stTabs [aria-selected="true"] {
+                        background-color: #FFFFFF; /* White background for active tab */
+                        border-bottom: none; /* Ensure no bottom border to blend with content frame */
+                    }
+
+                </style>
+                """
+    BIOME_SELECTION_BOX = """
+        <style>
+        .biome-box {
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .biome-box:hover {
+            border-color: #1f77b4;
+            background-color: #e8f4fd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .biome-box.selected {
+            border-color: #1f77b4;
+            background-color: #e8f4fd;
+            border-width: 3px;
+        }
+
+        .biome-logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .biome-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+        </style>
+        """
 

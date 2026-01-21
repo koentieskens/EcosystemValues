@@ -3,7 +3,8 @@ import json
 import os
 import ee
 import tempfile
-
+import streamlit as st
+from src.app_utils.session_states import SessionStateManager as ssm
 
 class AuthenticateServiceAccount:
 
@@ -36,7 +37,38 @@ class AuthenticateServiceAccount:
             json.dump(self.cred, temp_file)
             os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = temp_file.name
 
+class ConnectToGoogle:
 
+    def connect_to_google(self):
+        """
+        Connects to Google Cloud Platform using the provided service account
+        credentials stored in Streamlit secrets. It attempts to authenticate,
+        set the credentials, and initialize the Earth Engine API for use.
+
+        This method updates the session state variable `gee_initialized` to
+        indicate whether the Earth Engine API has been successfully initialized.
+
+        :raises Exception: If the Google Cloud Platform secrets cannot be loaded
+            from Streamlit secrets.
+        :raises Exception: If the connection to Google Cloud Platform or the
+            Earth Engine API initialization fails.
+
+        :return: None
+        """
+
+        try:
+            gcp_credentials = dict(st.secrets["google_sa_secrets"])
+            try:
+                au = AuthenticateServiceAccount(gcp_credentials)
+                au.set_credentials()
+                st.info('Connecting to Google Cloud Platform...')
+                au.initialize_ee()
+                ssm.GEE_INITIALIZED.set(True)
+            except Exception as e:
+                st.error(f"❌ Failed to connect to Google Cloud: {str(e)}")
+                ssm.GEE_INITIALIZED.set(False)
+        except Exception as e:
+            st.error(f"❌ Failed to open GCS Secrets: {str(e)}")
 
 if __name__ == '__main__':
     import streamlit as st

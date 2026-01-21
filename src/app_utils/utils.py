@@ -11,36 +11,6 @@ from ..utils.spatial import Spatial
 class St_Utils:
     """Streamlit utility functions"""
 
-    @staticmethod
-    def get_variable_display_info(var_obj):
-        """Extract display information from a variable object"""
-        try:
-            if hasattr(var_obj, 'lc') and var_obj.lc is not None:
-                return var_obj.lc.value[2], var_obj.lc.value[2]
-
-            variable_enum = var_obj.variable
-            if hasattr(variable_enum.value, 'description'):
-                name = variable_enum.value.description
-                tooltip = variable_enum.value.description
-            else:
-                name = str(variable_enum.value).replace('_', ' ').title()
-                tooltip = name
-
-            return name, tooltip
-        except Exception as e:
-            return str(var_obj.variable).replace('_', ' ').title(), ""
-
-    @staticmethod
-    def get_project_variable_display_info(project_var_obj):
-        """Extract display information from a project variable object"""
-        try:
-            var_enum = project_var_obj.variable
-            if hasattr(var_enum.value, '__len__') and len(var_enum.value) >= 2:
-                return var_enum.value[1]
-            else:
-                return str(var_enum.value).replace('_', ' ').title()
-        except:
-            return "Unknown Variable"
 
     @staticmethod
     def extract_values(model_class, lat, lon, area_hectares):
@@ -62,13 +32,13 @@ class St_Utils:
             return None, str(e)
 
     @staticmethod
-    def extract_global_layers(cost_layers, lat, lon, area_hectares):
+    def extract_global_layers(cost_layers, lat=0.0, lon=0.0, area=1.0):
         l = []
         for layer in cost_layers:
             bucket = layer.bucket
             gcs_loc = layer.gcs_path
             gcs_path = f"gs://{bucket}/{gcs_loc}"
-            value = Spatial.get_value_from_cog(gcs_path, lon, lat, area_hectares, band=layer.band)
+            value = Spatial.get_value_from_cog(gcs_path, lon, lat, area, band=layer.band)
             d = {layer.full_name:  value}
             l.append(d)
 
@@ -85,6 +55,14 @@ class St_Utils:
             d = {layer.full_name: value}
             l.append(d)
         return l
+
+    @staticmethod
+    def extract_global_layer_single(layer, polygon_gdf):
+        bucket = layer.bucket
+        gcs_loc = layer.gcs_path
+        gcs_path = f"gs://{bucket}/{gcs_loc}"
+        value = Spatial.get_value_from_cog_with_polygon(gcs_path, polygon_gdf, band=layer.band)
+        return value
 
     @staticmethod
     def get_location_info(lat, lon):

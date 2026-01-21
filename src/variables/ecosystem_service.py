@@ -9,6 +9,8 @@ class EcosystemServiceData(variable_template.Data):
     SEEA_clas3: str
     SEAA_Code: str
     data_source: str
+    description: str
+    unit: str = 'USD per ha per year'
 
     def get_tooltip(self):
         return (f"SEEA Classification\n\n"

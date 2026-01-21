@@ -40,6 +40,9 @@ class GlobalLayerData( variable_template.Data):
 
         return pd.DataFrame(data)
 
+    def get_tooltip(self):
+        return f'{self.description}'
+
 
 class GlobalLayer:
 
@@ -93,8 +96,8 @@ class GlobalLayer:
 
     FOREST_RECREATION_VALUE = GlobalLayerData(
         name="FOREST_RECREATION_VALUE",
-        full_name="Forest Recreation Value",
-        description="Forest recreation value based on Siikamaki et al. (2024)",
+        full_name="Recreation, hunting and fishing",
+        description="Recreation-related services are the ecosystem contributions, in particular through the biophysical characteristics and qualities of ecosystems, that enable people to use and enjoy the environment through direct, in-situ, physical and experiential interactions with the environment. This includes services to both locals and non-locals (i.e., visitors, including tourists). Recreation-related services may also be supplied to those undertaking recreational fishing and hunting. This is a final ecosystem service.",
         gcs_path="data/global_data/benefit/siikamaki/rec_2020_global_4326.tif",
         unit='2020 USD/ha',
         source='https://documents.worldbank.org/en/publication/documents-reports/documentdetail/099101124145545368',
@@ -105,8 +108,8 @@ class GlobalLayer:
 
     FOREST_NONWOOD_PRODUCTS_VALUE = GlobalLayerData(
         name="FOREST_NONWOOD_PRODUCTS_VALUE",
-        full_name="Forest Non-Wood Products Value",
-        description="Forest non-wood products value based on Siikamaki et al. (2024)",
+        full_name="Non-wood forest products",
+        description="Wild animals, plants and other biomass provisioning services are the ecosystem contributions to the growth of wild animals, plants and other biomass that are captured and harvested in uncultivated production contexts by economic units for various uses. The scope includes non-wood forest products (NWFP) and services related to hunting, trapping and bio-prospecting activities; but excludes wild fish and other natural aquatic biomass (included in previous class). This is a final ecosystem service.",
         gcs_path="data/global_data/benefit/siikamaki/nwfp_2020_global_4326.tif",
         unit='2020 USD/ha',
         source='https://documents.worldbank.org/en/publication/documents-reports/documentdetail/099101124145545368',
@@ -118,7 +121,7 @@ class GlobalLayer:
     FOREST_WATER_SERVICE_VALUE = GlobalLayerData(
         name="FOREST_WATER_SERVICE_VALUE",
         full_name="Forest Water Service Value",
-        description="Forest water services value based on Siikamaki et al. (2024)",
+        description="A combination of water related services: Water supply, Water purification services, rainfall pattern regulation services, soil erosion control services, Baseline flow maintenance services, Peak flow mitigation services, and River flood mitigation services",
         gcs_path="data/global_data/benefit/siikamaki/wat_2020_global_4326.tif",
         unit='2020 USD/ha',
         source='https://documents.worldbank.org/en/publication/documents-reports/documentdetail/099101124145545368',
@@ -129,8 +132,8 @@ class GlobalLayer:
 
     FOREST_HABITAT_VALUE = GlobalLayerData(
         name="FOREST_HABITAT_VALUE",
-        full_name="Forest Habitat Value",
-        description="Forest habitat value based on Siikamaki et al. (2024)",
+        full_name="Habitat and species protection",
+        description="Ecosystem and species appreciation concerns the wellbeing that people derive from the existence and preservation of the environment for current and future generations, irrespective of any direct or indirect use.",
         gcs_path="data/global_data/benefit/siikamaki/hab_2020_global_4326.tif",
         unit='2020 USD/ha',
         source='https://documents.worldbank.org/en/publication/documents-reports/documentdetail/099101124145545368',

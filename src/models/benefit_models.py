@@ -1,10 +1,11 @@
-from ..variables.spatial_variable import BenefitSpatialVariable, ClimateSpatialVariable, CountrySpatialVariable
-from ..variables.variables import ModelVariable
+from src.variables.spatial_variable import BenefitSpatialVariable, ClimateSpatialVariable, CountrySpatialVariable
+from src.variables.variables import ModelVariable
 from ..variables.land_cover import LandCoverGroup
 from ..variables.ecosystem_service import EcosystemService
 from ..variables.global_layers import GlobalLayer
 from src.variables.sub_biome import SubBiome
 from src.variables.value_type import ValueType
+from src.models import cost_models
 
 class TropicalForest:
     CONSTANTS = {
@@ -27,15 +28,15 @@ class TropicalForest:
 
     ECOSYSTEM_SERVICES = [
         ModelVariable(EcosystemService.WOOD_PROVISION, coefficient=1.183),
-        ModelVariable(EcosystemService.WILD_FISH_PROVISION, coefficient=1.519),
-        ModelVariable(EcosystemService.WATER_SUPPLY, coefficient=3.771),
+        #ModelVariable(EcosystemService.WILD_FISH_PROVISION, coefficient=1.519),
+        #ModelVariable(EcosystemService.WATER_SUPPLY, coefficient=3.771),
         ModelVariable(EcosystemService.AIR_FILTRATION, coefficient=2.438),
-        ModelVariable(EcosystemService.GLOBAL_CLIMATE, coefficient=3.513),
+        #ModelVariable(EcosystemService.GLOBAL_CLIMATE, coefficient=3.513),
         ModelVariable(EcosystemService.POLLINATION, coefficient=1.069),
         ModelVariable(EcosystemService.RAINFALL_REGULATION, coefficient=3.369),
         ModelVariable(EcosystemService.RIVER_FLOOD_REGULATION, coefficient=2.758),
         ModelVariable(EcosystemService.SOIL_EROSION_REGULATION, coefficient=1.548),
-        ModelVariable(EcosystemService.RECREATION, coefficient=-0.271),
+        #ModelVariable(EcosystemService.RECREATION, coefficient=-0.271),
     ]
 
     SUB_BIOMES = []
@@ -53,11 +54,13 @@ class TropicalForest:
     ]
 
     SIIKAMAKI = [
-        GlobalLayer.FOREST_HABITAT_VALUE,
-        GlobalLayer.FOREST_NONWOOD_PRODUCTS_VALUE,
-        GlobalLayer.FOREST_RECREATION_VALUE,
-        GlobalLayer.FOREST_WATER_SERVICE_VALUE
+        ModelVariable(GlobalLayer.FOREST_HABITAT_VALUE),
+        ModelVariable(GlobalLayer.FOREST_NONWOOD_PRODUCTS_VALUE),
+        ModelVariable(GlobalLayer.FOREST_RECREATION_VALUE),
+        ModelVariable(GlobalLayer.FOREST_WATER_SERVICE_VALUE)
     ]
+
+    COST_MODEL = cost_models.BUSCH
 
     GLOBAL_LAYERS = [
         GlobalLayer.RESTORATION_OPPORTUNITY_COST,
@@ -94,15 +97,15 @@ class TemparateForest:
     ]
 
     ECOSYSTEM_SERVICES = [
-        ModelVariable(EcosystemService.WILD_ANIMAL_PROVISION, coefficient=-1.993),
+        #ModelVariable(EcosystemService.WILD_ANIMAL_PROVISION, coefficient=-1.993),
         ModelVariable(EcosystemService.WOOD_PROVISION, coefficient= -0.426),
-        ModelVariable(EcosystemService.WATER_SUPPLY, coefficient= -2.601),
+        #ModelVariable(EcosystemService.WATER_SUPPLY, coefficient= -2.601),
         ModelVariable(EcosystemService.AIR_FILTRATION, coefficient=-0.834),
         ModelVariable(EcosystemService.NUTRIENT_RETENTION, coefficient=-3.167),
         ModelVariable(EcosystemService.RAINFALL_REGULATION, coefficient=-1.218),
         ModelVariable(EcosystemService.SOIL_EROSION_REGULATION, coefficient=-0.731),
         ModelVariable(EcosystemService.SOIL_QUALITY_REGULATION, coefficient=-1.791),
-        ModelVariable(EcosystemService.RECREATION, coefficient= -1.771),
+        #ModelVariable(EcosystemService.RECREATION, coefficient= -1.771),
     ]
 
     VALUE_TYPES = [
@@ -116,11 +119,13 @@ class TemparateForest:
     ]
 
     SIIKAMAKI = [
-        GlobalLayer.FOREST_HABITAT_VALUE,
-        GlobalLayer.FOREST_NONWOOD_PRODUCTS_VALUE,
-        GlobalLayer.FOREST_RECREATION_VALUE,
-        GlobalLayer.FOREST_WATER_SERVICE_VALUE
+        ModelVariable(GlobalLayer.FOREST_HABITAT_VALUE),
+        ModelVariable(GlobalLayer.FOREST_NONWOOD_PRODUCTS_VALUE),
+        ModelVariable(GlobalLayer.FOREST_RECREATION_VALUE),
+        ModelVariable(GlobalLayer.FOREST_WATER_SERVICE_VALUE)
     ]
+
+    COST_MODEL = cost_models.BUSCH
 
     GLOBAL_LAYERS = [
         GlobalLayer.RESTORATION_OPPORTUNITY_COST,
@@ -174,6 +179,8 @@ class IntensiveLandUse:
         ('Provisioning', ModelVariable(BenefitSpatialVariable.POP_DENSITY, ln=True, coefficient=0.34))  # PopD_ESprov
     ]
 
+    COST_MODEL = cost_models.IntensiveLandUseCost
+
     GLOBAL_LAYERS = [
         GlobalLayer.RESTORATION_OPPORTUNITY_COST,
         GlobalLayer.EXOTIC_IMPLEMENTATION_COST,
@@ -218,7 +225,7 @@ class Mangroves:
     ]
 
     INTERACTIONS = []
-
+    COST_MODEL = cost_models.BUSCH
     GLOBAL_LAYERS = [
         GlobalLayer.RESTORATION_OPPORTUNITY_COST,
         GlobalLayer.EXOTIC_IMPLEMENTATION_COST,
@@ -266,7 +273,7 @@ class Grassland:
     SUB_BIOMES = []
 
     INTERACTIONS = []
-
+    COST_MODEL = cost_models.GrasslandCost
     GLOBAL_LAYERS = [
         GlobalLayer.RESTORATION_OPPORTUNITY_COST,
         GlobalLayer.EXOTIC_IMPLEMENTATION_COST,

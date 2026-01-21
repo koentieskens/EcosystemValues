@@ -122,7 +122,6 @@ class BenefitSpatialVariable:
         description='Ecosystem Integrity Index',
         aggregation='mean',
         unit='Index 0-1',
-        multiplier=100,
         gee_path='projects/ee-maidiesinitam/assets/valueFunctions/eii_padj_v5140524_reprojected',
         alt_path='projects/ee-maidiesinitam/assets/valueFunctions/eii_padj_v5140524_reprojected',
         extraction_function=GEE.get_image_from_single_image,

@@ -8,7 +8,8 @@ import geopandas as gpd
 import ee
 import sys
 import os
-
+import base64
+from src.app_utils.css import CSS
 from src.utils.spatial import Spatial
 
 # Add the project root to the path to allow imports
@@ -47,6 +48,7 @@ class EcoApp:
         self.area = 1
         self.ecosystem_type = None
         self.model_class = None
+        self.cost_model = None
         self.ecosystem_display_name = None
         self.ecosystem_services = {}
         self.sub_biomes = {}
@@ -99,51 +101,6 @@ class EcoApp:
         :return: A boolean value indicating if a selection was made.
         :rtype: bool
         """
-        # Add custom CSS for the biome boxes
-        st.markdown("""
-        <style>
-        .biome-box {
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            background-color: #f8f9fa;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            height: 150px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .biome-box:hover {
-            border-color: #1f77b4;
-            background-color: #e8f4fd;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        .biome-box.selected {
-            border-color: #1f77b4;
-            background-color: #e8f4fd;
-            border-width: 3px;
-        }
-
-        .biome-logo {
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-
-        .biome-name {
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-            margin: 0;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-
         # Define biome logos (you can replace these with actual image paths if you have them)
         BIOME_LOGOS = {
             'tropical_forest': '🌴',
@@ -176,6 +133,7 @@ class EcoApp:
                     self.ecosystem_type = ecosystem_key
                     model_class = self.ECOSYSTEM_MODELS[ecosystem_key]
                     self.model_class = model_class()
+                    self.cost_model = self.model_class.COST_MODEL
                     self.ecosystem_display_name = self.ECOSYSTEM_DISPLAY_NAMES[ecosystem_key]
                     selection_made = True
                     st.rerun()
@@ -215,6 +173,10 @@ class EcoApp:
             st.session_state.extracted_values = {}
         if 'extraction_done' not in st.session_state:
             st.session_state.extraction_done = False
+        if 'cost_extracted_values' not in st.session_state:
+            st.session_state.cost_extracted_values = {}
+        if 'cost_extraction_done' not in st.session_state:
+            st.session_state.cost_extraction_done = False
         if 'lat_input' not in st.session_state:
             st.session_state.lat_input = self.lat
         if 'lon_input' not in st.session_state:
@@ -227,47 +189,6 @@ class EcoApp:
             st.session_state.polygon_centroid = None
         if 'active_location_tab' not in st.session_state:
             st.session_state.active_location_tab = "manual"
-
-
-    def tab_layout(self):
-        """
-        Applies custom CSS styling to the tab layout in a Streamlit application. This function modifies
-        the appearance of tabs and their container to enhance aesthetics, including background colors,
-        borders, dimensions, and aligning active tabs with content areas.
-
-        :return: None
-        """
-        # CSS code to get the tabs to look nice
-        st.markdown("""
-                <style>
-                    /* Main container for tabs */
-                    .stTabs [data-baseweb="tab-list"] {
-                        gap: 2px;
-                    }
-
-                    /* Individual tab appearance */
-                    .stTabs [data-baseweb="tab"] {
-                        height: 50px;
-                        white-space: pre-wrap;
-                        background-color: #F0F2F6; /* Background for inactive tabs */
-                        border-radius: 8px 8px 0px 0px; /* Rounded top corners */
-                        gap: 1px;
-                        padding-top: 3px;
-                        padding-bottom: 3px;
-                        padding-left: 20px;
-                        padding-right: 20px;
-                        border: 1px solid #ddd; /* Add a border to all tabs */
-                        border-bottom: none; /* Remove bottom border for tab itself */
-                    }
-
-                    /* Active (selected) tab appearance */
-                    .stTabs [aria-selected="true"] {
-                        background-color: #FFFFFF; /* White background for active tab */
-                        border-bottom: none; /* Ensure no bottom border to blend with content frame */
-                    }
-
-                </style>
-                """, unsafe_allow_html=True)
 
     def manual_input(self):
         """
@@ -530,7 +451,8 @@ class EcoApp:
                 with cols[i % 2]:
                     self.siikamaki_layers[var_key] = st.checkbox(
                         display_name,
-                        key=f"proj_{var_key}_{self.ecosystem_type}"
+                        key=f"proj_{var_key}_{self.ecosystem_type}",
+                        help = pvar_obj.get_tooltip()
                     )
 
 
@@ -568,7 +490,7 @@ class EcoApp:
             st.info("No sub-biomes available for this ecosystem type.")
 
     def cost_variables_menu(self):
-        if hasattr(self.model_class, 'GLOBAL_LAYERS'):
+        if hasattr(self.cost_model, 'GLOBAL_LAYERS'):
             cols = st.columns(2)
             for i, pvar_obj in enumerate(self.model_class.GLOBAL_LAYERS):
                 display_name = pvar_obj.full_name
@@ -577,13 +499,93 @@ class EcoApp:
                 with cols[i % 2]:
                     self.cost_layers[var_key] = st.checkbox(
                         display_name,
-                        key=f"cost_{var_key}_{self.ecosystem_type}"
+                        key=f"cost_{var_key}_{self.ecosystem_type}",
+                        help=pvar_obj.get_tooltip()
+                    )
+
+        elif hasattr(self.cost_model, 'VARIABLES'):
+            cols = st.columns(2)
+            for i, pvar_obj in enumerate(self.cost_model.NBS):
+                display_name = pvar_obj.variable.full_name
+                var_key = pvar_obj.variable.name
+                with cols[i % 2]:
+                    pvar_obj.value = st.checkbox(
+                        display_name,
+                        key=f"cost_{var_key}_{self.ecosystem_type}",
+                        help=pvar_obj.variable.description
                     )
         else:
             st.info("Please select a biome first")
 
 
-    def model_variables_menu(self):
+    def cost_spatial_variables_menu(self):
+        if hasattr(self.cost_model, 'VARIABLES'):
+
+
+            for var_obj in self.cost_model.VARIABLES:
+                display_name = var_obj.variable.full_name
+                tool_tip = var_obj.variable.get_tooltip()
+                var_key = var_obj.variable.name
+
+
+                default_value = 0.0
+                session_key = f"var_cost_{var_key}_{self.ecosystem_type}"
+
+                #Initialize session state if not exists
+                if not st.session_state.cost_extraction_done:
+                    print(f'{session_key} is being rest to 0')
+                    st.session_state[session_key] = default_value
+
+                if (st.session_state.get('cost_extraction_done', False) and
+                        st.session_state.get('cost_update_from_extraction', False) and
+                        var_key in st.session_state.get('cost_extracted_values', {})):
+                    try:
+                        cost_extracted_value = float(st.session_state.cost_extracted_values[var_key])
+                        if cost_extracted_value != 0:  # Only update if not zero
+                            st.session_state[session_key] = cost_extracted_value
+                    except (ValueError, TypeError):
+                        pass
+
+                var_obj.value = st.number_input(
+                    f"{display_name} (cost)",
+                    #value=st.session_state[session_key],
+                    step=0.01,
+                    format="%.2f",
+                    help=tool_tip if tool_tip else None,
+                    key=session_key
+                )
+
+            if st.button("🔄 Extract Spatial Values from GEE (Cost)", type="primary",
+                         use_container_width=True):
+                if not st.session_state.get('gee_initialized', 0):
+                    st.error("Please initialize Google Earth Engine first")
+                else:
+                    with st.spinner(
+                            f"Extracting values from Google Earth Engine for {self.lat:.6f}, {self.lon:.6f} {self.area}... "):
+                        cost_extracted_values, error = St_Utils.extract_values(self.cost_model, self.lat, self.lon,
+                                                                          self.area)
+                        print(cost_extracted_values)
+                        if error:
+                            st.error(f"Extraction failed: {error}")
+                        else:
+                            # Store extracted values and set update flag
+                            st.session_state.cost_extracted_values = cost_extracted_values
+                            st.session_state.cost_extraction_done = True
+                            st.session_state.cost_update_from_extraction = True  # Flag to trigger updates
+                            st.success(f"✅ Extracted {len(cost_extracted_values)} variables")
+                            st.rerun()
+
+            # Reset the update flag after one cycle (add this at the end of the widget creation loop)
+            if st.session_state.get('cost_update_from_extraction', False):
+                st.session_state.cost_update_from_extraction = False
+
+            # Show extraction status
+            if st.session_state.cost_extraction_done and st.session_state.cost_extracted_values:
+                st.info(f"✅ Using extracted values from GEE ({len(st.session_state.cost_extracted_values)} variables)")
+        else:
+            st.info("No Cost Variables available for this ecosystem type.")
+
+    def benefit_spatial_variables_menu(self):
         if hasattr(self.model_class, 'VARIABLES'):
 
 
@@ -641,7 +643,11 @@ class EcoApp:
                             st.session_state.extraction_done = True
                             st.session_state.update_from_extraction = True  # Flag to trigger updates
                             st.success(f"✅ Extracted {len(extracted_values)} variables")
+                            print(f"DEBUG: About to rerun. Cost values: {[v for k, v in st.session_state.items() if 'var_cost_' in k]}")
+
                             st.rerun()
+
+
 
             # Reset the update flag after one cycle (add this at the end of the widget creation loop)
             if st.session_state.get('update_from_extraction', False):
@@ -686,17 +692,34 @@ class EcoApp:
             # Validate inputs
             if not all([self.lat != 0 or self.lon != 0, self.area > 0]):
                 st.error("Please provide valid latitude, longitude, and area values")
+            if hasattr(self.cost_model, 'GLOBAL_LAYERS'):
+                cost_layers = []
+                for pvar_obj in self.cost_model.GLOBAL_LAYERS:
+                    var_key = pvar_obj.name
+                    is_selected = self.cost_layers.get(var_key, 0)
+                    if is_selected:
+                        cost_layers.append(pvar_obj)
 
-            cost_layers = []
-            for pvar_obj in self.model_class.GLOBAL_LAYERS:
-                var_key = pvar_obj.name
-                is_selected = self.cost_layers.get(var_key, 0)
-                if is_selected:
-                    cost_layers.append(pvar_obj)
+                cost_per_ha = St_Utils.extract_global_layers(cost_layers, self.lat, self.lon, self.area)
+                print(cost_per_ha)
+                return cost_per_ha
+            elif hasattr(self.cost_model, 'VARIABLES'):
+                predicted_values = {}
+                nbss = [nbs for nbs in self.cost_model.NBS if nbs.value]
 
-            cost_per_ha = St_Utils.extract_global_layers(cost_layers, self.lat, self.lon, self.area)
+                for nbs in nbss:
+                    predicted_value = Predict.predict_cost(self.cost_model, nbs, self.area, self.lat)
+                    predicted_values[nbs.variable.name] = predicted_value
 
-            return cost_per_ha
+                st.success("✅ Calculation Complete!")
+                print(predicted_values)
+                result = [{key: float(value)} for key, value in predicted_values.items()]
+
+
+                return result
+
+            else:
+                return None
         else:
             return None
 
@@ -747,56 +770,41 @@ class EcoApp:
                             unsafe_allow_html=True)
 
     def display_costs(self, cost_per_ha):
-        tv = 0
+
         for cost in cost_per_ha:
             try:
                 k = [k for k, v in cost.items()][0]
                 v = [v for k, v in cost.items()][0]
                 st.metric(
                     label=k,
-                    value = f"${v:,.2f}",
+                    value = f"${v:,.2f} per ha",
                     help = "USD per hectare"
                 )
-                tv += v
+
             except TypeError:
                 k = [k for k, v in cost.items()][0]
-                v = [v for k, v in cost.items()][0]
                 st.metric(
                     label=k,
                     value=f"No cost data available for location"
                 )
-        return tv
+
 
     @staticmethod
-    def clear_display_data():
-        if 'displayed_benefits' in st.session_state:
-            del st.session_state.displayed_benefits
-        if 'benefits_data' in st.session_state:
-            del st.session_state.benefits_data
-        if 'displayed_costs' in st.session_state:
-            del st.session_state.displayed_costs
-        if 'costs_data' in st.session_state:
-            del st.session_state.costs_data
-
-
-def main():
-    from src.app_utils.css import CSS
-    import base64
-    st.markdown("""
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-        html, body, [class*="css"] {
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
-    """, unsafe_allow_html=True)
-
     def get_base64_image(image_path):
         with open(image_path, "rb") as img_file:
             return base64.b64encode(img_file.read()).decode()
 
+def main():
+
+
+
+
+
+
     #-------------------------------------------------- Main config --------------------------------------------------#
+    # set the font to Google's font
+    st.markdown(CSS.GOOGLE_FONT, unsafe_allow_html=True)
+
     st.set_page_config(
         page_title="Ecosystem Valuation Tool",
         page_icon="🌱",
@@ -814,12 +822,13 @@ def main():
 
 
     # --------------------------------------------------- Main Page --------------------------------------------------#
-    img_base64 = get_base64_image("src/images/NBS_GFDRR_Admin_WBG_2.avif")
+
 
     col1, col2 = st.columns([2, 1])
     with col1:
         st.title("Ecosystem Valuation Tool")
     with col2:
+        img_base64 = st.session_state.app.get_base64_image("src/images/NBS_GFDRR_Admin_WBG_2.avif")
         st.markdown("""
             <style>
             .bottom-align {
@@ -837,7 +846,6 @@ def main():
             </a>
             """, unsafe_allow_html=True)
 
-        #st.image("src/images/NBS_GFDRR_Admin_WBG_2.avif")
         st.markdown('</div>', unsafe_allow_html=True)
 
 
@@ -870,6 +878,7 @@ def main():
             NBS costs and benefits are estimated based on biome specific value transfer functions.
             To make sure you get the most accurate estimation for your study area, please select the biome that best
             represents your study area.""")
+            st.markdown(CSS.BIOME_SELECTION_BOX, unsafe_allow_html=True)
             st.session_state.app.biome_selection_boxes()
 
         with col2:
@@ -887,7 +896,7 @@ def main():
     with col_loc:
         with st.container(key='location'):
             st.header('Project Location')
-            st.session_state.app.tab_layout()
+            st.markdown(CSS.TAB_LAYOUT, unsafe_allow_html=True)
             tab_manual, tab_polygon = st.tabs(["📍 Enter Manually", "🗺️ Draw Polygon"])
 
             with tab_manual:
@@ -910,7 +919,11 @@ def main():
     with col_values:
         with st.container(key='spatial_variables'):
             st.header('Spatial Predictor Variables')
-            st.session_state.app.model_variables_menu()
+            tab_benefit, tab_cost = st.tabs(["Benefit", "Cost"])
+            with tab_benefit:
+                st.session_state.app.benefit_spatial_variables_menu()
+            with tab_cost:
+                st.session_state.app.cost_spatial_variables_menu()
 
     st.markdown("")
     # -------------------- Benefits -------------------- #
@@ -947,9 +960,9 @@ def main():
         st.markdown("---")
         col1, col2 = st.columns([1, 1])
         with col1:
-            st.subheader("Type of Cost")
+            st.subheader("Type of Intervention")
 
-            st.markdown("""Select which costs you want to include in the cost assessment.""")
+            st.markdown("""Select which intervention you want to include in the cost assessment.""")
             st.session_state.app.cost_variables_menu()
             cost_per_ha = st.session_state.app.calculate_costs()
 

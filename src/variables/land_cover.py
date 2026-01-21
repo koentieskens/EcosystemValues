@@ -29,12 +29,12 @@ class LandCoverGroup:
         name='LC_Forest',
         full_name = "Land cover: forest (%)",
         description = 'percentage of the AOI covered in forest',
-        classes = ['121', '122', '130', '140', '150', '151', '152', '153', '160', '170', '180', '190'])
+        classes = ['11', '12', '50', '60', '61', '62', '70', '71', '72', '80', '81', '90', '100'])
 
 
     MANGROVE =  LandCoverData(
         name='LC_Mangrove',
         full_name = "Land cover: mangrove (%)",
         description = 'percentage of the AOI covered in mangroves',
-        classes =['100', '110', '120'])
+        classes =['160', '170'])
 
