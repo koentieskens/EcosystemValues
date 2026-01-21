@@ -387,19 +387,20 @@ class Sidebar:
 
     def title_and_about(self):
         """Title and about information section"""
-        st.title("🌱 Ecosystem Benefits Calculator")
+        st.title("🌱 NBS Valuation Tool")
 
         with st.expander("ℹ️ About this tool"):
             st.markdown("""
             This tool helps estimate the economic value of ecosystem services 
-            for different biomes and locations.
+            for different NBS types in different biomes and locations.
 
             **How to use:**
-            1. Set your project location
-            2. Select a biome type
+            1. Select a biome type
+            2. Define the project area
             3. Extract spatial variables
-            4. Choose ecosystem services
-            5. Calculate benefits and costs
+            4. Choose ecosystem services and calculate estimated benefits
+            5. Choose intervention types and calculate estimated costs
+            6. Download results in CSV format
             """)
 
     def location_info(self):
@@ -521,8 +522,8 @@ class Sidebar:
         st.subheader("🔗 Learn More")
 
         # You'll need to specify the actual image path and website URL
-        image_path = "src/images/logo.png"  # Adjust path as needed
-        website_url = "https://your-website.com"  # Replace with actual URL
+        image_path = "src/images/NBS_GFDRR_Admin_WBG_2.avif"  # Adjust path as needed
+        website_url = "https://www.naturebasedsolutions.org"  # Replace with actual URL
 
         try:
             # Display image with link
