@@ -391,8 +391,11 @@ class Sidebar:
 
         with st.expander("ℹ️ About this tool"):
             st.markdown("""
-            This tool helps estimate the economic value of ecosystem services 
-            for different NBS types in different biomes and locations.
+            The tool is an interactive application that produces site-specific estimates of restoration costs and
+            ecosystem service values. Users define a project location and basic characteristics (such as biome, area,
+            and the type of estimate needed). The tool then selects the most appropriate underlying model or mapped
+            dataset and returns an estimated cost and/or benefit for that project. In practice, the tool supports
+            early-stage decision-making, especially when teams need consistent, transparent numbers quickly.
 
             **How to use:**
             1. Select a biome type
