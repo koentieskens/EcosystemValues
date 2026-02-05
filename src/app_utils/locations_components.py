@@ -203,24 +203,6 @@ class LocationManager:
             icon=folium.Icon(color='red', icon='star')
         ).add_to(m)
 
-    @ssm.SAVED_POLYGON.skip_if_none()
-    def _show_manual_polygon(self, m):
-
-        folium.Polygon(
-            locations=ssm.MANUAL_POLYGON.get(),
-            color='blue',
-            weight=2,
-            fill=True,
-            fillColor='lightsalmon',
-            fillOpacity=0.3,
-            popup="Saved Polygon"
-        ).add_to(m)
-
-        # Add centroid marker
-        folium.Marker(
-            location=[ssm.PROJECT_LOCATION.get()['lat'], ssm.PROJECT_LOCATION.get()['lon']],
-            icon=folium.Icon(color='red', icon='star')
-        ).add_to(m)
 
     def _add_drawing_tools(self, m):
         folium.plugins.Draw(
@@ -230,7 +212,7 @@ class LocationManager:
                 'polyline': False,
                 'rectangle': True,
                 'polygon': True,
-                'circle': False,
+                'circle': True,
                 'marker': False,
                 'circlemarker': False,
             }
@@ -283,18 +265,3 @@ class LocationManager:
             st.write(f"**Biome**: {biome}")
             st.write(f"**Estimated Area:** {area:,.2f} hectares")
 
-def main():
-    st.set_page_config(
-        page_title="Ecosystem Valuation Tool",
-        page_icon="🌱",
-        layout="wide"
-    )
-    ssm.initialize_all()
-    lm = LocationManager()
-    lm.polygon_info()
-    st.markdown("---")
-    lm.draw_map()
-    lm.location_info()
-
-if __name__ == "__main__":
-    main()
