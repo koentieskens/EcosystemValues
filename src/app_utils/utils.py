@@ -152,6 +152,16 @@ class CurrencyConverter:
 
         return value_usd_to
 
+    @staticmethod
+    def convert_usd_year(value, country, from_year, to_year):
+        exchange_rate_from = CurrencyConverter.get_excange_rate(country, from_year)
+        exchange_rate_to = CurrencyConverter.get_excange_rate(country, to_year)
+        inflation_rate = CurrencyConverter.get_local_inflation(country, from_year, to_year)
+
+        lcu_year_from = value * exchange_rate_from
+        lcu_year_to = lcu_year_from * inflation_rate
+        usd_year_to = lcu_year_to / exchange_rate_to
+        return usd_year_to
 
 
 

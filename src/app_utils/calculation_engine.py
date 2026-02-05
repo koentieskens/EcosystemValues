@@ -10,7 +10,13 @@ from iso3166 import countries
 class CalculationEngine:
 
     def calculate_benefit(self):
-
+        """
+        Calculates and updates the ecosystem service benefits based on various model
+        parameters and user-defined project locations. The calculation incorporates
+        benefit prediction, value type conversions, and updates prediction sets
+        accordingly. An optional Siikamaki calculation is performed if supported by
+        the model class.
+        """
         if st.button("Calculate Benefits", type="primary", use_container_width=True):
 
             lat = ssm.PROJECT_LOCATION.get()['lat']
@@ -20,6 +26,8 @@ class CalculationEngine:
 
             model_class = ssm.MODEL_CLASS.get()
             prediction_sets = ssm.PREDICTION_SETS.get()
+            # get the ppp conversion factor to 2024 USD
+            conversion_factor = self.convert_to_usd(1, country)
             for vt in model_class.VALUE_TYPES:
                 vt.value = 1.0
                 predicted_values = {}
@@ -27,7 +35,7 @@ class CalculationEngine:
 
                 for es in ess:
                     predicted_value = Predict.predict_benefit(model_class, es, vt, ssm.PROJECT_LOCATION.get()['area'])
-                    converted_value = self.convert_to_usd(predicted_value, country)
+                    converted_value = predicted_value * conversion_factor
                     predicted_values[es.variable.name] = converted_value
                     if vt.variable.name == 'Cons_Surplus':
                         es.cons_surplus = predicted_value
@@ -44,29 +52,91 @@ class CalculationEngine:
 
     @staticmethod
     def convert_to_usd(value, country, from_year=2020, to_year=2024):
+        """
+        Converts a monetary value from a specific country's purchasing power
+        parity (PPP) to its equivalent in US dollars for given years using
+        a currency conversion system.
+
+        This method provides an easy interface for converting currency
+        based on PPP adjustments between specified years.
+
+        :param value: Monetary value in the international $ to be converted.
+        :type value: float
+        :param country: The country of the local currency. in ISO 3166-1 alpha-3 format.
+        :type country: str
+        :param from_year: The initial year for the PPP adjustment, with a
+            default value of 2020.
+        :type from_year: int, optional
+        :param to_year: The final year for the PPP adjustment, with a
+            default value of 2024.
+        :type to_year: int, optional
+        :return: The equivalent monetary value in US dollars in {from_year}.
+        :rtype: float
+        """
         return CurrencyConverter.convert_ppp_to_usd(value, country, from_year, to_year)
 
     def _calculate_siikamaki(self):
+        """
+        Calculates values per hectare for selected layers based on Siikamaki model.
 
+        This method processes a set of layers defined by the provided Siikamaki
+        model class. For each layer that has an associated enabled variable,
+        it calculates values per hectare by extracting global layer values
+        using the specified area of interest (AOI). Each layer's value is then
+        stored in the corresponding variable object and a list summarizing these
+        values is returned. If no AOI is provided, the function returns None.
+
+        :param self: The class instance from which this private method is invoked.
+        :return: A list of dictionaries where each dictionary represents a layer
+                 and its calculated value per hectare, or None if no AOI is
+                 defined.
+        :rtype: list[dict[str, Any]] or None
+        """
         model_class = ssm.MODEL_CLASS.get()
         # Validate inputs
         if ssm.AOI_GDF.get() is not None:
 
             siikamaki_layers = [var_obj for var_obj in model_class.SIIKAMAKI if var_obj.value]
+            lat = ssm.PROJECT_LOCATION.get()['lat']
+            lon = ssm.PROJECT_LOCATION.get()['lon']
+            locations = reverse_geocode.get((lat, lon))['country_code']
+            country = countries.get(locations).alpha3
+            # Siikamaki values are in 2017 int $
+            conversion_factor = self.convert_to_usd(1, country, from_year=2017)
             values_per_ha = []
             for var_obj in siikamaki_layers:
                 layer = var_obj.variable
                 value = St_Utils.extract_global_layer_single(layer, ssm.AOI_GDF.get())
-                dict_pair = {layer.full_name: value}
+                converted_value = value * conversion_factor
+                dict_pair = {layer.full_name: converted_value}
                 values_per_ha.append(dict_pair)
-                var_obj.cons_surplus = value
-                var_obj.exchange_value = value
+                var_obj.cons_surplus = converted_value
+                var_obj.exchange_value = converted_value
 
             return values_per_ha
         else:
             return None
 
     def calculate_costs(self):
+        """
+        Calculate costs based on the cost model and project location data.
+
+        This method calculates costs either using global layers or nature-based solutions
+        (NBS) associated with the provided model class. It identifies the project location,
+        determines the appropriate cost calculation method (based on availability of global
+        layers or NBS), and performs the cost prediction. For global layers, it retrieves and
+        converts the costs to USD. For NBS, it calculates predicted values for each selected NBS
+        and converts them to USD. If no applicable cost model exists, the method returns None.
+
+        The calculation can only proceed when the "Calculate Costs" button is pressed. Data
+        is processed and returned based on the attributes of the accessed cost model.
+
+        :returns:
+            - If global layers are available, the converted cost per hectare as a float.
+            - If nature-based solutions are used, a list of dictionaries containing the
+              predicted costs converted to USD.
+            - None if no applicable cost model is found or if the button is not pressed.
+        """
         model_class = ssm.MODEL_CLASS.get()
         if st.button("Calculate Costs", type="primary", use_container_width=True):
             lat = ssm.PROJECT_LOCATION.get()['lat']
@@ -75,20 +145,24 @@ class CalculationEngine:
             country = countries.get(locations).alpha3
 
             if hasattr(model_class.COST_MODEL, 'GLOBAL_LAYERS'):
+                # Bush et al values are in 2020 USD
+                conversion_factor = CurrencyConverter.convert_usd_year(1, country, 2020, 2024)
                 cost_layers = [var_obj.variable for var_obj in model_class.COST_MODEL.GLOBAL_LAYERS if var_obj.value]
                 cost_per_ha = St_Utils.extract_global_layers(cost_layers, **ssm.PROJECT_LOCATION.get())
-                converted_value = self.convert_to_usd(cost_per_ha, country, from_year=2021)
-                return converted_value
+                converted_costs = [{k: v * conversion_factor for k, v in d.items()} for d in cost_per_ha]
+
+                return converted_costs
 
             elif hasattr(model_class.COST_MODEL, 'NBS'):
                 predicted_values = {}
                 nbss = [nbs for nbs in model_class.COST_MODEL.NBS if nbs.value]
-
+                # Cost values are in 2021 int $
+                conversion_factor = self.convert_to_usd(1, country, from_year=2021)
                 for nbs in nbss:
                     area = ssm.PROJECT_LOCATION.get()['area']
                     lat = ssm.PROJECT_LOCATION.get()['lat']
                     predicted_value = Predict.predict_cost(model_class.COST_MODEL, nbs, area, lat)
-                    converted_value = self.convert_to_usd(predicted_value, country, from_year=2021)
+                    converted_value = predicted_value * conversion_factor
                     predicted_values[nbs.variable.name] = converted_value
 
                 st.success("Calculation Complete!")
