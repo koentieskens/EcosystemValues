@@ -134,9 +134,8 @@ class EcoApp:
                 st.header('Project Location')
                 col_params_pol, col_map_pol = st.columns([1, 2])
                 with col_params_pol:
-
                     self.locman.polygon_info()
-                    self.locman.location_info()
+
                 with col_map_pol:
                     if self.locman.should_update_map():
                         st.session_state.cached_map = self.locman.draw_map()
