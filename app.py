@@ -36,7 +36,10 @@ class EcoApp:
 
 
     def welcome(self):
+
+
         with st.container(key='welcome'):
+
 
             col1, col2 = st.columns([2, 1])
             with col1:
@@ -62,9 +65,33 @@ class EcoApp:
                     """, unsafe_allow_html=True)
 
                 st.markdown('</div>', unsafe_allow_html=True)
-
-            st.markdown("---")
-
+            with st.expander("About this tool"):
+                st.markdown("""
+                The tool is an interactive application that produces site-specific estimates of restoration costs and
+                ecosystem service values. Users define a project location and basic characteristics (such as biome, area,
+                and the type of estimate needed). The tool then selects the most appropriate underlying model or mapped
+                dataset and returns an estimated cost and/or benefit for that project. In practice, the tool supports
+                early-stage decision-making, especially when teams need consistent, transparent numbers quickly.""")
+            with st.expander("How to use the tool"):
+                st.markdown("""
+                **1. Select a biome type**<br>
+                    Pick any of the five options listed that best reflects the biome of your project area. Some biomes
+                    require you to select a sub category.<br>
+                **2. Define the project arean**<br>
+                    Use the polygon or rectangle drawing tool in the displayed world map to define the area of your project.
+                    The area size and location of polygon you draw will be used to assess the values and costs of ecosystem services and interventions.<br>
+                **3. Extract spatial variables**<br>
+                    After you drawn and activated your polygon you can extract spatial variables that will be used to 
+                    estimate ecosystem benefits and costs.<br>
+                **4. Choose ecosystem services and calculate estimated benefits**<br>
+                    Each biome has a specific set of ecosystem services that this tool can estimate.
+                    Select the ones you want to include in your assessment. Calculate the benefits after you made your selection.<br>
+                **5. Choose intervention types and calculate estimated costs**<br>
+                    Similar to ecosystem services, each biome has a specific set of intervention types that this tool can estimate.
+                    Select the ones you are interested in and calculate the costs.<br>
+                **6. Download results in CSV format**<br>
+                    After calculations are done and displayed in the main frame,in the sidebar you can download the results in CSV format.
+                """,unsafe_allow_html=True)
 
     def set_css(self):
         st.markdown(f"<style>{CSS.WELCOME}</style>", unsafe_allow_html=True)
