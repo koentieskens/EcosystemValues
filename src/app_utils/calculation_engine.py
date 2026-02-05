@@ -2,6 +2,10 @@ import streamlit as st
 from src.predictions.meta_regression import Predict
 from src.app_utils.utils import St_Utils
 from src.app_utils.session_states import SessionStateManager as ssm
+from src.app_utils.utils import CurrencyConverter
+import reverse_geocode
+
+from iso3166 import countries
 
 class CalculationEngine:
 
@@ -9,6 +13,10 @@ class CalculationEngine:
 
         if st.button("Calculate Benefits", type="primary", use_container_width=True):
 
+            lat = ssm.PROJECT_LOCATION.get()['lat']
+            lon = ssm.PROJECT_LOCATION.get()['lon']
+            locations = reverse_geocode.get((lat, lon))['country_code']
+            country = countries.get(locations).alpha3
 
             model_class = ssm.MODEL_CLASS.get()
             prediction_sets = ssm.PREDICTION_SETS.get()
@@ -19,7 +27,8 @@ class CalculationEngine:
 
                 for es in ess:
                     predicted_value = Predict.predict_benefit(model_class, es, vt, ssm.PROJECT_LOCATION.get()['area'])
-                    predicted_values[es.variable.name] = predicted_value
+                    converted_value = self.convert_to_usd(predicted_value, country)
+                    predicted_values[es.variable.name] = converted_value
                     if vt.variable.name == 'Cons_Surplus':
                         es.cons_surplus = predicted_value
                     if vt.variable.name == 'Exchange_Value':
@@ -33,6 +42,9 @@ class CalculationEngine:
             ssm.BENEFITS_UPDATED.set(True)
             st.success("Calculation Complete!")
 
+    @staticmethod
+    def convert_to_usd(value, country, from_year=2020, to_year=2024):
+        return CurrencyConverter.convert_ppp_to_usd(value, country, from_year, to_year)
 
     def _calculate_siikamaki(self):
 
@@ -57,11 +69,16 @@ class CalculationEngine:
     def calculate_costs(self):
         model_class = ssm.MODEL_CLASS.get()
         if st.button("Calculate Costs", type="primary", use_container_width=True):
+            lat = ssm.PROJECT_LOCATION.get()['lat']
+            lon = ssm.PROJECT_LOCATION.get()['lon']
+            locations = reverse_geocode.get((lat, lon))['country_code']
+            country = countries.get(locations).alpha3
 
             if hasattr(model_class.COST_MODEL, 'GLOBAL_LAYERS'):
                 cost_layers = [var_obj.variable for var_obj in model_class.COST_MODEL.GLOBAL_LAYERS if var_obj.value]
                 cost_per_ha = St_Utils.extract_global_layers(cost_layers, **ssm.PROJECT_LOCATION.get())
-                return cost_per_ha
+                converted_value = self.convert_to_usd(cost_per_ha, country, from_year=2021)
+                return converted_value
 
             elif hasattr(model_class.COST_MODEL, 'NBS'):
                 predicted_values = {}
@@ -71,7 +88,8 @@ class CalculationEngine:
                     area = ssm.PROJECT_LOCATION.get()['area']
                     lat = ssm.PROJECT_LOCATION.get()['lat']
                     predicted_value = Predict.predict_cost(model_class.COST_MODEL, nbs, area, lat)
-                    predicted_values[nbs.variable.name] = predicted_value
+                    converted_value = self.convert_to_usd(predicted_value, country, from_year=2021)
+                    predicted_values[nbs.variable.name] = converted_value
 
                 st.success("Calculation Complete!")
                 result = [{key: float(value)} for key, value in predicted_values.items()]

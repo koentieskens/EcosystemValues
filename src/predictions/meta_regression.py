@@ -3,6 +3,7 @@ import numpy as np
 from src.models.benefit_models import IntensiveLandUse, Grassland, TropicalForest, TemparateForest
 from src.models.cost_models import IntensiveLandUseCost
 from src.variables.variables import ModelVariable
+from src.app_utils.utils import CurrencyConverter
 
 
 from typing import Union, List, Optional

@@ -99,6 +99,67 @@ class St_Utils:
 
         return geod_area / 10000
 
+from src.variables.spatial_variable import CountrySpatialVariable
+import wbgapi as wb
+class CurrencyConverter:
+
+    @staticmethod
+    def get_wb_value(var_id: str = None, country: str = 'USA', year: int = 2024):
+        df = wb.data.DataFrame(var_id, country, year)
+        value = df.loc[country, var_id]
+        return value.item()
+
+
+    @staticmethod
+    def get_ppp_conversion_rate(country, year):
+        ppp_factor = 'PA.NUS.PPP'
+        df = wb.data.DataFrame(ppp_factor, country, year)
+        value = df.loc[country, ppp_factor]
+        return value.item()
+
+    @staticmethod
+    def get_excange_rate(country, year):
+        wb_code = 'PA.NUS.FCRF'
+        df = wb.data.DataFrame(wb_code, country, year)
+        value = df.loc[country, wb_code]
+        return value.item()
+
+    @staticmethod
+    def get_local_inflation(country, from_year, to_year):
+        wb_code = 'FP.CPI.TOTL'
+        cpi_data = wb.data.DataFrame(wb_code,
+                                     economy=country,
+                                     time=[from_year, to_year])
+        from_code_col = f'YR{from_year}'
+        to_code_col = f'YR{to_year}'
+        inflation_rate = cpi_data.loc[country, to_code_col] / cpi_data.loc[country, from_code_col]
+
+        return inflation_rate.item()
+
+    @staticmethod
+    def convert_ppp_to_usd(value, country, from_year, to_year):
+        # calculate the value in local LCU in from year
+        ppp_conv = CurrencyConverter.get_ppp_conversion_rate(country, from_year)
+        value_lcu_from = value * ppp_conv
+
+        #apply inflation rate
+        inflation_rate = CurrencyConverter.get_local_inflation(country, from_year, to_year)
+        value_lcu_to = value_lcu_from * inflation_rate
+
+        #convert to USD
+        exchange_rate = CurrencyConverter.get_excange_rate(country, to_year)
+        value_usd_to = value_lcu_to / exchange_rate
+
+        return value_usd_to
+
+
+
+
+
+
+
+
+
 
 
 
