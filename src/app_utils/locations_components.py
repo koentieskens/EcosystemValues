@@ -199,8 +199,7 @@ class LocationManager:
 
         # Add centroid marker
         folium.Marker(
-            location=ssm.POLYGON_CENTROID.get(),
-            popup=f"Centroid: {ssm.POLYGON_CENTROID.get()[0]:.6f}, {ssm.POLYGON_CENTROID.get()[1]:.6f}",
+            location=[ssm.PROJECT_LOCATION.get()['lat'], ssm.PROJECT_LOCATION.get()['lon']],
             icon=folium.Icon(color='red', icon='star')
         ).add_to(m)
 
@@ -220,7 +219,6 @@ class LocationManager:
         # Add centroid marker
         folium.Marker(
             location=[ssm.PROJECT_LOCATION.get()['lat'], ssm.PROJECT_LOCATION.get()['lon']],
-            popup=f"Centroid: {ssm.MANUAL_CENTROID.get()[0]:.6f}, {ssm.MANUAL_CENTROID.get()[1]:.6f}",
             icon=folium.Icon(color='red', icon='star')
         ).add_to(m)
 
