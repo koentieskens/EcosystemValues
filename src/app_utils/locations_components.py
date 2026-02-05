@@ -122,10 +122,16 @@ class LocationManager:
         try:
             ssm.LOCATION_ACTIVATED.set(True)
             ssm.LOCATION_TYPE.set('polygon')
+            centroid = ssm.DRAWN_POLYGON.get().centroid
+            ssm.POLYGON_CENTROID.set((centroid.y, centroid.x))
             ssm.PROJECT_LOCATION.set({'lat': ssm.POLYGON_CENTROID.get()[0], 'lon': ssm.POLYGON_CENTROID.get()[1], 'area':ssm.POLYGON_AREA.get()})
             ssm.SAVED_POLYGON.set(ssm.UNSAVED_POLYGON.get())
             ssm.AOI_GDF.set(gpd.GeoDataFrame([1], geometry=[ssm.DRAWN_POLYGON.get()], crs='EPSG:4326'))
             ssm.ZOOM_LEVEL.set(10)
+            county, country = St_Utils.get_location_info(ssm.PROJECT_LOCATION.get()['lat'],
+                                                         ssm.PROJECT_LOCATION.get()['lon'])
+            ssm.SAVED_COUNTRY.set(country)
+            ssm.SAVED_REGION.set(county)
             st.rerun()
         except TypeError:
             ssm.LOCATION_ACTIVATED.set(False)
@@ -142,6 +148,10 @@ class LocationManager:
             gdf = self.create_circle_gdf(ssm.MANUAL_CENTROID.get()[0], ssm.MANUAL_CENTROID.get()[1], ssm.MANUAL_AREA.get())[0]
             ssm.AOI_GDF.set(gdf)
             ssm.ZOOM_LEVEL.set(10)
+            county, country = St_Utils.get_location_info(ssm.PROJECT_LOCATION.get()['lat'],
+                                                         ssm.PROJECT_LOCATION.get()['lon'])
+            ssm.SAVED_COUNTRY.set(country)
+            ssm.SAVED_REGION.set(county)
             st.rerun()
         except TypeError:
             ssm.LOCATION_ACTIVATED.set(False)
