@@ -49,7 +49,8 @@ class GlobalLayer:
     RESTORATION_OPPORTUNITY_COST = GlobalLayerData(
         name="RESTORATION_OPPORTUNITY_COST",
         full_name= "Restoration Opportunity Cost",
-        description="NBS annual opportunity cost based on Busch et al. (2024)",
+        description="""NBS annual opportunity cost based on Busch et al. (2024),
+        Costs and are summed over a period of 30 years and time-discounted at a rate of 5% annually.""",
         gcs_path="data/global_data/cost/se_plan/opportunity_cost.tif",
         unit='2020 USD/ha/yr',
         source='https://www.nature.com/articles/s41558-024-02068-1',
@@ -61,7 +62,8 @@ class GlobalLayer:
     REGENERATION_IMPLEMENTATION_COST = GlobalLayerData(
         name="REGENERATION_IMPLEMENTATION_COST",
         full_name="Implementation Cost (natural regeneration)",
-        description="Implementation cost of restoring tree cover for passive regeneration based on Busch et al. (2024)",
+        description="""Implementation cost of restoring tree cover for passive regeneration based on Busch et al. (2024),
+        Costs and are summed over a period of 30 years and time-discounted at a rate of 5% annually.""",
         gcs_path="data/global_data/cost/se_plan/implementation_cost.tif",
         unit='2020 USD/ha',
         source='https://www.nature.com/articles/s41558-024-02068-1',
@@ -73,7 +75,8 @@ class GlobalLayer:
     NATIVE_IMPLEMENTATION_COST = GlobalLayerData(
         name="NATIVE_IMPLEMENTATION_COST",
         full_name="Implementation Cost (native species)",
-        description="Implementation cost of restoring tree cover for plantation of native species based on Busch et al. (2024)",
+        description="""Implementation cost of restoring tree cover for plantation of native species based on Busch et al. (2024),
+        Costs and are summed over a period of 30 years and time-discounted at a rate of 5% annually.""",
         gcs_path="data/global_data/cost/se_plan/implementation_cost.tif",
         unit='2020 USD/ha',
         source='https://www.nature.com/articles/s41558-024-02068-1',
@@ -85,7 +88,8 @@ class GlobalLayer:
     EXOTIC_IMPLEMENTATION_COST = GlobalLayerData(
         name="EXOTIC_IMPLEMENTATION_COST",
         full_name="Implementation Cost (introduced species)",
-        description="Implementation cost of restoring tree cover for plantation of introduced species based on Busch et al. (2024)",
+        description="""Implementation cost of restoring tree cover for plantation of introduced species based on Busch et al. (2024)",
+        Costs and are summed over a period of 30 years and time-discounted at a rate of 5% annually.""",
         gcs_path="data/global_data/cost/se_plan/implementation_cost.tif",
         unit='2020 USD/ha',
         source='https://www.nature.com/articles/s41558-024-02068-1',
