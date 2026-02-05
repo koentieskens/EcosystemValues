@@ -16,57 +16,57 @@ class NBSData(variable_template.Data):
 class NBS:
 
     NBS_4 = NBSData(
-        name='NBS 4',
-        full_name='nbs_4',
+        name='Cross-slope measure',
+        full_name='Cross-slope measure',
         description='NBS 4 is a certain NBS that we calculated costs for',
         data_source='WOCAT'
     )
 
     NBS_10 = NBSData(
-        name='NBS 10',
-        full_name='nbs_10',
+        name='Improved ground/ vegetation cover',
+        full_name='Improved ground/ vegetation cover',
         description='NBS 10 is a certain NBS that we calculated costs for',
         data_source='WOCAT'
     )
 
     NBS_14 = NBSData(
-        name='NBS 14',
-        full_name='nbs_14',
+        name='Integrated soil fertility management',
+        full_name='Integrated soil fertility management',
         description='NBS 14 is a certain NBS that we calculated costs for',
         data_source='WOCAT'
     )
 
     NBS_16 = NBSData(
-        name='NBS 16',
-        full_name='nbs_16',
+        name='Minimal soil disturbance',
+        full_name='Minimal soil disturbance',
         description='NBS 16 is a certain NBS that we calculated costs for',
         data_source='WOCAT'
     )
 
     NBS_21 = NBSData(
-        name='NBS 21',
-        full_name='nbs_21',
+        name='Rotational systems (crop rotation, fallows, shifting cultivation)',
+        full_name='Rotational systems (crop rotation, fallows, shifting cultivation)',
         description='NBS 21 is a certain NBS that we calculated costs for',
         data_source='WOCAT'
     )
 
     NBS_30 = NBSData(
-        name='NBS 30',
-        full_name='nbs_30',
+        name='Trees in plots',
+        full_name='Trees in plots',
         description='NBS 30 is a certain NBS that we calculated costs for',
         data_source='WOCAT'
     )
 
     NBS_31 = NBSData(
-        name='NBS 31',
-        full_name='nbs_31',
+        name='Integrated crop livestock',
+        full_name='Integrated crop livestock',
         description='NBS 31 is a certain NBS that we calculated costs for',
         data_source='WOCAT'
     )
 
     NBS_32 = NBSData(
-        name='NBS 32',
-        full_name='nbs_32',
+        name='Water management',
+        full_name='Water management',
         description='NBS 32 is a certain NBS that we calculated costs for',
         data_source='WOCAT'
     )
