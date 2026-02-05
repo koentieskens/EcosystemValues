@@ -567,14 +567,28 @@ class CountrySpatialVariable:
 
     PPP = SpatialData(
         name='PPP_factor',
-        full_name='PPP conversion factor',
-        description='PPP Conversion factor per country',
+        full_name='Price level ratio of PPP conversion factor (GDP) to market exchange rate',
+        description='Price level ratio of PPP conversion factor (GDP) to market exchange rate',
         aggregation='Country value',
         unit='Factor',
         gee_path='PA.NUS.PPPC.RF',
         alt_path='TBD',
         extraction_function=GEE.get_wb,
         source='https://data.worldbank.org/indicator/PA.NUS.PPPC.RF',
+        scale=300,
+        method='wb'
+    )
+
+    PPP_CONVERSION = SpatialData(
+        name='PPP_conversion',
+        full_name='PPP conversion factor GDP (LCU per international $)',
+        description='PPP Conversion factor per country',
+        aggregation='Country value',
+        unit='Factor',
+        gee_path='PA.NUS.PPP',
+        alt_path='TBD',
+        extraction_function=GEE.get_wb,
+        source='https://data.worldbank.org/indicator/PA.NUS.PPP',
         scale=300,
         method='wb'
     )
