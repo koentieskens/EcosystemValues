@@ -297,7 +297,7 @@ class UIRenderer:
                 st.metric(
                     label=key,
                     value=f"${predicted_values[key]:,.2f} per ha",
-                    help="USD per hectare per year"
+                    help="2024 USD per hectare per year"
                 )
             total_value += predicted_values[key]
         st.markdown(f"<h3 style='text-align: right;'>Total Value per ha: ${total_value:,.2f}</h3>",
@@ -346,7 +346,7 @@ class UIRenderer:
                 st.metric(
                     label=k,
                     value=f"${v:,.2f} per ha",
-                    help="USD per hectare"
+                    help="Values are in 2024 USD"
                 )
 
             except TypeError:

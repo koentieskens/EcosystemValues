@@ -158,12 +158,12 @@ class CalculationEngine:
                 nbss = [nbs for nbs in model_class.COST_MODEL.NBS if nbs.value]
                 # Cost values are in 2021 int $
                 conversion_factor = self.convert_to_usd(1, country, from_year=2021)
-                for nbs in nbss:
-                    area = ssm.PROJECT_LOCATION.get()['area']
-                    lat = ssm.PROJECT_LOCATION.get()['lat']
-                    predicted_value = Predict.predict_cost(model_class.COST_MODEL, nbs, area, lat)
-                    converted_value = predicted_value * conversion_factor
-                    predicted_values[nbs.variable.name] = converted_value
+
+                area = ssm.PROJECT_LOCATION.get()['area']
+                lat = ssm.PROJECT_LOCATION.get()['lat']
+                predicted_value = Predict.predict_cost(model_class.COST_MODEL, nbss, area, lat)
+                converted_value = predicted_value * conversion_factor
+                predicted_values['NBS Total Cost'] = converted_value
 
                 st.success("Calculation Complete!")
                 result = [{key: float(value)} for key, value in predicted_values.items()]
