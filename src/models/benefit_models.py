@@ -164,7 +164,7 @@ class IntensiveLandUse:
         ModelVariable(EcosystemService.LIVESTOCK_PROVISION, coefficient= -1.418),  # S_Livestock
         ModelVariable(EcosystemService.POLLINATION, coefficient=1.087),  # S_Pollination
         ModelVariable(EcosystemService.SOIL_EROSION_REGULATION, coefficient= 2.174),  # S_Soil_Erosion_Reg
-        ModelVariable(EcosystemService.WATER_FLOW_REGULATION, coefficient=6.46),  # S_Water_Flow_Reg
+        #ModelVariable(EcosystemService.WATER_FLOW_REGULATION, coefficient=6.46),  # S_Water_Flow_Reg
         ModelVariable(EcosystemService.RECREATION, coefficient= -1.062),  # S_Recreation
         ModelVariable(EcosystemService.VISUAL_AMENITY, coefficient= -1.889)  # S_Visual_Amenity
     ]
