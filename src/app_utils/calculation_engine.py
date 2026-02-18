@@ -18,37 +18,39 @@ class CalculationEngine:
         the model class.
         """
         if st.button("Calculate Benefits", type="primary", use_container_width=True):
+            try:
+                lat = ssm.PROJECT_LOCATION.get()['lat']
+                lon = ssm.PROJECT_LOCATION.get()['lon']
+                locations = reverse_geocode.get((lat, lon))['country_code']
+                country = countries.get(locations).alpha3
 
-            lat = ssm.PROJECT_LOCATION.get()['lat']
-            lon = ssm.PROJECT_LOCATION.get()['lon']
-            locations = reverse_geocode.get((lat, lon))['country_code']
-            country = countries.get(locations).alpha3
+                model_class = ssm.MODEL_CLASS.get()
+                prediction_sets = ssm.PREDICTION_SETS.get()
+                # get the ppp conversion factor to 2024 USD
+                conversion_factor = self.convert_to_usd(1, country)
+                for vt in model_class.VALUE_TYPES:
+                    vt.value = 1.0
+                    predicted_values = {}
+                    ess = [es for es in model_class.ECOSYSTEM_SERVICES if es.value]
 
-            model_class = ssm.MODEL_CLASS.get()
-            prediction_sets = ssm.PREDICTION_SETS.get()
-            # get the ppp conversion factor to 2024 USD
-            conversion_factor = self.convert_to_usd(1, country)
-            for vt in model_class.VALUE_TYPES:
-                vt.value = 1.0
-                predicted_values = {}
-                ess = [es for es in model_class.ECOSYSTEM_SERVICES if es.value]
+                    for es in ess:
+                        predicted_value = Predict.predict_benefit(model_class, es, vt, ssm.PROJECT_LOCATION.get()['area'])
+                        converted_value = predicted_value * conversion_factor
+                        predicted_values[es.variable.name] = converted_value
+                        if vt.variable.name == 'Cons_Surplus':
+                            es.cons_surplus = predicted_value
+                        if vt.variable.name == 'Exchange_Value':
+                            es.exchange_value = predicted_value
+                    prediction_sets[vt.variable.full_name] = predicted_values
 
-                for es in ess:
-                    predicted_value = Predict.predict_benefit(model_class, es, vt, ssm.PROJECT_LOCATION.get()['area'])
-                    converted_value = predicted_value * conversion_factor
-                    predicted_values[es.variable.name] = converted_value
-                    if vt.variable.name == 'Cons_Surplus':
-                        es.cons_surplus = predicted_value
-                    if vt.variable.name == 'Exchange_Value':
-                        es.exchange_value = predicted_value
-                prediction_sets[vt.variable.full_name] = predicted_values
+                if hasattr(model_class, 'SIIKAMAKI'):
+                    siikamaki_benefits = self._calculate_siikamaki()
+                    ssm.SIIKAMAKI_BENEFITS.set(siikamaki_benefits)
 
-            if hasattr(model_class, 'SIIKAMAKI'):
-                siikamaki_benefits = self._calculate_siikamaki()
-                ssm.SIIKAMAKI_BENEFITS.set(siikamaki_benefits)
-
-            ssm.BENEFITS_UPDATED.set(True)
-            st.success("Calculation Complete!")
+                ssm.BENEFITS_UPDATED.set(True)
+                st.success("Calculation Complete!")
+            except Exception as e:
+                st.error(f"Error calculating benefits: {e}")
 
     @staticmethod
     def convert_to_usd(value, country, from_year=2020, to_year=2024):
@@ -140,45 +142,48 @@ class CalculationEngine:
         """
         model_class = ssm.MODEL_CLASS.get()
         if st.button("Calculate Costs", type="primary", use_container_width=True):
-            lat = ssm.PROJECT_LOCATION.get()['lat']
-            lon = ssm.PROJECT_LOCATION.get()['lon']
-            locations = reverse_geocode.get((lat, lon))['country_code']
-            country = countries.get(locations).alpha3
-
-            if hasattr(model_class.COST_MODEL, 'GLOBAL_LAYERS'):
-                # Bush et al values are in 2020 USD
-                conversion_factor = CurrencyConverter.convert_usd_year(1, country, 2020, 2024)
-                cost_layers = [var_obj.variable for var_obj in model_class.COST_MODEL.GLOBAL_LAYERS if var_obj.value]
-                cost_per_ha = St_Utils.extract_global_layers(cost_layers, **ssm.PROJECT_LOCATION.get())
-                converted_costs = [{k: v * conversion_factor for k, v in d.items()} for d in cost_per_ha]
-
-                # AV = PV * r/(1-(1+r)^(-1*years)) (from email from Luke Brander
-                #convert to annual values from present values
-                def annualize(pv, r, years):
-                    av = pv * r / (1 - (1 + r)**(-1 * years))
-
-                    return av
-                converted_costs = [{k: annualize(v, 0.05, 30) for k, v in d.items()} for d in cost_per_ha]
-
-                return converted_costs
-
-            elif hasattr(model_class.COST_MODEL, 'NBS'):
-                predicted_values = {}
-                nbss = [nbs for nbs in model_class.COST_MODEL.NBS if nbs.value]
-                # Cost values are in 2021 int $
-                conversion_factor = self.convert_to_usd(1, country, from_year=2021)
-
-                area = ssm.PROJECT_LOCATION.get()['area']
+            try:
                 lat = ssm.PROJECT_LOCATION.get()['lat']
-                predicted_value = Predict.predict_cost(model_class.COST_MODEL, nbss, area, lat)
-                converted_value = predicted_value * conversion_factor
-                predicted_values['NBS Total Cost'] = converted_value
+                lon = ssm.PROJECT_LOCATION.get()['lon']
+                locations = reverse_geocode.get((lat, lon))['country_code']
+                country = countries.get(locations).alpha3
 
-                st.success("Calculation Complete!")
-                result = [{key: float(value)} for key, value in predicted_values.items()]
-                return result
+                if hasattr(model_class.COST_MODEL, 'GLOBAL_LAYERS'):
+                    # Bush et al values are in 2020 USD
+                    conversion_factor = CurrencyConverter.convert_usd_year(1, country, 2020, 2024)
+                    cost_layers = [var_obj.variable for var_obj in model_class.COST_MODEL.GLOBAL_LAYERS if var_obj.value]
+                    cost_per_ha = St_Utils.extract_global_layers(cost_layers, **ssm.PROJECT_LOCATION.get())
+                    converted_costs = [{k: v * conversion_factor for k, v in d.items()} for d in cost_per_ha]
 
-            else:
-                return None
+                    # AV = PV * r/(1-(1+r)^(-1*years)) (from email from Luke Brander
+                    #convert to annual values from present values
+                    def annualize(pv, r, years):
+                        av = pv * r / (1 - (1 + r)**(-1 * years))
+
+                        return av
+                    converted_costs = [{k: annualize(v, 0.05, 30) for k, v in d.items()} for d in cost_per_ha]
+
+                    return converted_costs
+
+                elif hasattr(model_class.COST_MODEL, 'NBS'):
+                    predicted_values = {}
+                    nbss = [nbs for nbs in model_class.COST_MODEL.NBS if nbs.value]
+                    # Cost values are in 2021 int $
+                    conversion_factor = self.convert_to_usd(1, country, from_year=2021)
+
+                    area = ssm.PROJECT_LOCATION.get()['area']
+                    lat = ssm.PROJECT_LOCATION.get()['lat']
+                    predicted_value = Predict.predict_cost(model_class.COST_MODEL, nbss, area, lat)
+                    converted_value = predicted_value * conversion_factor
+                    predicted_values['NBS Total Cost'] = converted_value
+
+                    st.success("Calculation Complete!")
+                    result = [{key: float(value)} for key, value in predicted_values.items()]
+                    return result
+
+                else:
+                    return None
+            except Exception as e:
+                st.error(f"Error calculating costs: {e}")
         else:
             return None
