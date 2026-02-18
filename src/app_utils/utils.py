@@ -6,6 +6,7 @@ from shapely.geometry import Polygon
 from pyproj import CRS, Transformer, Geod
 from ..extract_data.predictions import Predictions
 from ..utils.spatial import Spatial
+from ..utils import wb360
 
 
 class St_Utils:
@@ -111,21 +112,42 @@ class CurrencyConverter:
 
 
     @staticmethod
-    def get_ppp_conversion_rate(country, year):
+    def get_ppp_conversion_rate_old(country, year):
         ppp_factor = 'PA.NUS.PPP'
         df = wb.data.DataFrame(ppp_factor, country, year)
         value = df.loc[country, ppp_factor]
         return value.item()
 
     @staticmethod
-    def get_excange_rate(country, year):
+    def get_ppp_conversion_rate(country, year):
+        try:
+            database_id = "IMF_WEO"
+            indicator = "IMF_WEO_PPPEX"
+            value = float(wb360.get_worldbank_data(database_id, indicator, country, timePeriodFrom=year, timePeriodTo=year))
+        except Exception as e:
+            value = CurrencyConverter.get_ppp_conversion_rate_old(country, year)
+        return value
+
+    @staticmethod
+    def get_excange_rate_old(country, year):
         wb_code = 'PA.NUS.FCRF'
         df = wb.data.DataFrame(wb_code, country, year)
         value = df.loc[country, wb_code]
         return value.item()
 
     @staticmethod
-    def get_local_inflation(country, from_year, to_year):
+    def get_excange_rate(country, year):
+        try:
+            database_id = "IMF_IFS"
+            indicator = "IMF_IFS_END_XDC_USD"
+            value = float(wb360.get_worldbank_data(database_id, indicator, country, timePeriodFrom=year, timePeriodTo=year))
+        except Exception as e:
+            value = CurrencyConverter.get_excange_rate_old(country, year)
+
+        return value
+
+    @staticmethod
+    def get_local_inflation_old(country, from_year, to_year):
         wb_code = 'FP.CPI.TOTL'
         cpi_data = wb.data.DataFrame(wb_code,
                                      economy=country,
@@ -135,6 +157,21 @@ class CurrencyConverter:
         inflation_rate = cpi_data.loc[country, to_code_col] / cpi_data.loc[country, from_code_col]
 
         return inflation_rate.item()
+
+    @staticmethod
+    def get_local_inflation(country, from_year, to_year):
+        try:
+            database_id = "FAO_CP"
+            indicator = "FAO_CP_23012"
+            value_from = float(wb360.get_worldbank_data(database_id, indicator, country, timePeriodFrom=f'{from_year}-01-01',
+                                                        timePeriodTo=f'{from_year}-01-01'))
+            value_to = float(wb360.get_worldbank_data(database_id, indicator, country, timePeriodFrom=f'{to_year}-01-01',
+                                                   timePeriodTo=f'{to_year}-01-01'))
+            inflation_rate = value_to / value_from
+        except Exception as e:
+            inflation_rate = CurrencyConverter.get_local_inflation_old(country, from_year, to_year)
+
+        return inflation_rate
 
     @staticmethod
     def convert_ppp_to_usd(value, country, from_year, to_year):
