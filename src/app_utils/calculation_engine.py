@@ -73,6 +73,7 @@ class CalculationEngine:
         :return: The equivalent monetary value in US dollars in {from_year}.
         :rtype: float
         """
+        print('converting')
         return CurrencyConverter.convert_ppp_to_usd(value, country, from_year, to_year)
 
     def _calculate_siikamaki(self):
