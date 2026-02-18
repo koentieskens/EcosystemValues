@@ -12,6 +12,8 @@ class ModelVariable:
     ln: bool = False
     ihs: bool = False
     buffer: Optional[int] = None
+    min_value: Optional[float] = None
+    max_value: Optional[float] = None
     value: float = 0
     lc: LandCoverGroup = None
     cost_value: float = 0

@@ -15,27 +15,27 @@ class TropicalForest:
     }
 
     VARIABLES = [
-        ModelVariable(BenefitSpatialVariable.ELEVATION, ln=True, coefficient=0.566),
-        ModelVariable(BenefitSpatialVariable.SLOPE, ln=True, coefficient=-0.511),
-        ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ln=True, coefficient=-0.679),
-        ModelVariable(BenefitSpatialVariable.BIODIVERSITY_INTACTNESS, ln=True, coefficient=5.793),
-        ModelVariable(BenefitSpatialVariable.PROTECTION_STATUS, ln=True, coefficient=-0.334),
+        ModelVariable(BenefitSpatialVariable.ELEVATION, ln=True, coefficient=0.566, min_value=0, max_value=1572),
+        ModelVariable(BenefitSpatialVariable.SLOPE, ln=True, coefficient=-0.511, min_value=0.05, max_value=11.2),
+        ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ln=True, coefficient=-0.679, min_value=0.4, max_value=2.8),
+        ModelVariable(BenefitSpatialVariable.BIODIVERSITY_INTACTNESS, ln=True, coefficient=5.793, min_value=64, max_value=100),
+        ModelVariable(BenefitSpatialVariable.PROTECTION_STATUS, ln=True, coefficient=-0.334, min_value=0, max_value=100),
         ModelVariable(BenefitSpatialVariable.LAND_COVER, lc=LandCoverGroup.FOREST, coefficient=0.007, buffer=50000),
-        ModelVariable(BenefitSpatialVariable.HUMAN_MODIF_INDEX, ln=True, coefficient=-1.096, buffer=50000),
-        ModelVariable(BenefitSpatialVariable.POP_DENSITY, ln=True, coefficient=0.202, buffer=10000),
-        ModelVariable(CountrySpatialVariable.GNI_PER_CAPITA, ln=True, coefficient=0.012)
+        ModelVariable(BenefitSpatialVariable.HUMAN_MODIF_INDEX, ln=True, coefficient=-1.096, buffer=50000, min_value=0, max_value=80),
+        ModelVariable(BenefitSpatialVariable.POP_DENSITY, ln=True, coefficient=0.202, buffer=10000, min_value=0.5, max_value=1400),
+        ModelVariable(CountrySpatialVariable.GNI_PER_CAPITA, ln=True, coefficient=0.012, min_value=520, max_value=49650)
     ]
 
     ECOSYSTEM_SERVICES = [
         ModelVariable(EcosystemService.WOOD_PROVISION, coefficient=1.183),
-        #ModelVariable(EcosystemService.WILD_FISH_PROVISION, coefficient=1.519),
+        ModelVariable(EcosystemService.WILD_FISH_PROVISION, coefficient=1.519),
         #ModelVariable(EcosystemService.WATER_SUPPLY, coefficient=3.771),
         ModelVariable(EcosystemService.AIR_FILTRATION, coefficient=2.438),
         #ModelVariable(EcosystemService.GLOBAL_CLIMATE, coefficient=3.513),
         ModelVariable(EcosystemService.POLLINATION, coefficient=1.069),
-        ModelVariable(EcosystemService.RAINFALL_REGULATION, coefficient=3.369),
-        ModelVariable(EcosystemService.RIVER_FLOOD_REGULATION, coefficient=2.758),
-        ModelVariable(EcosystemService.SOIL_EROSION_REGULATION, coefficient=1.548),
+        #ModelVariable(EcosystemService.RAINFALL_REGULATION, coefficient=3.369),
+        #ModelVariable(EcosystemService.RIVER_FLOOD_REGULATION, coefficient=2.758),
+        #ModelVariable(EcosystemService.SOIL_EROSION_REGULATION, coefficient=1.548),
         #ModelVariable(EcosystemService.RECREATION, coefficient=-0.271),
     ]
 
@@ -79,16 +79,16 @@ class TemparateForest:
     }
 
     VARIABLES = [
-        ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95, ln=True, coefficient=-6.854),
-        ModelVariable(ClimateSpatialVariable.DRY_DAYS, ln=True, coefficient=2.663),
-        ModelVariable(ClimateSpatialVariable.MEAN_ANNUAL_TEMPERATURE, ln=True, coefficient=-0.737),
-        ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ln=True, coefficient=2.063),
-        ModelVariable(BenefitSpatialVariable.BIODIVERSITY_INTACTNESS, ln=True, coefficient=4.000),
-        ModelVariable(BenefitSpatialVariable.ROAD_DENSITY, ln=True, coefficient=0.352, buffer=10000),
-        ModelVariable(BenefitSpatialVariable.SETTLEMENTS, ln=True, coefficient=0.912, buffer=10000),
+        ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95, ln=True, coefficient=-6.854, min_value=25, max_value=70),
+        ModelVariable(ClimateSpatialVariable.DRY_DAYS, ln=True, coefficient=2.663, min_value=72, max_value=298),
+        ModelVariable(ClimateSpatialVariable.MEAN_ANNUAL_TEMPERATURE, ln=True, coefficient=-0.737, min_value=7.2, max_value=27),
+        ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ln=True, coefficient=2.063, min_value=0.4, max_value=2.8),
+        ModelVariable(BenefitSpatialVariable.BIODIVERSITY_INTACTNESS, ln=True, coefficient=4.000, min_value=64, max_value=100),
+        ModelVariable(BenefitSpatialVariable.ROAD_DENSITY, ln=True, coefficient=0.352, buffer=10000, min_value=32, max_value=5034),
+        ModelVariable(BenefitSpatialVariable.SETTLEMENTS, ln=True, coefficient=0.912, buffer=10000, min_value=0, max_value=9.7),
         ModelVariable(BenefitSpatialVariable.LAND_COVER, lc=LandCoverGroup.FOREST, coefficient=0.004, buffer=30000),
-        ModelVariable(BenefitSpatialVariable.POP_DENSITY, ln=True, coefficient=-0.199, buffer=10000),
-        ModelVariable(CountrySpatialVariable.GNI_PER_CAPITA, ln=True, coefficient=0.154)
+        ModelVariable(BenefitSpatialVariable.POP_DENSITY, ln=True, coefficient=-0.199, buffer=10000,  min_value=0.5, max_value=1400),
+        ModelVariable(CountrySpatialVariable.GNI_PER_CAPITA, ln=True, coefficient=0.154, min_value=520, max_value=49650)
     ]
 
     SUB_BIOMES = [
@@ -101,9 +101,9 @@ class TemparateForest:
         ModelVariable(EcosystemService.WOOD_PROVISION, coefficient= -0.426),
         #ModelVariable(EcosystemService.WATER_SUPPLY, coefficient= -2.601),
         ModelVariable(EcosystemService.AIR_FILTRATION, coefficient=-0.834),
-        ModelVariable(EcosystemService.NUTRIENT_RETENTION, coefficient=-3.167),
-        ModelVariable(EcosystemService.RAINFALL_REGULATION, coefficient=-1.218),
-        ModelVariable(EcosystemService.SOIL_EROSION_REGULATION, coefficient=-0.731),
+        #ModelVariable(EcosystemService.NUTRIENT_RETENTION, coefficient=-3.167),
+        #ModelVariable(EcosystemService.RAINFALL_REGULATION, coefficient=-1.218),
+        #ModelVariable(EcosystemService.SOIL_EROSION_REGULATION, coefficient=-0.731),
         ModelVariable(EcosystemService.SOIL_QUALITY_REGULATION, coefficient=-1.791),
         #ModelVariable(EcosystemService.RECREATION, coefficient= -1.771),
     ]
@@ -144,11 +144,11 @@ class IntensiveLandUse:
 
     VARIABLES = [
         ModelVariable(BenefitSpatialVariable.NPP_SHARE, ln=True, coefficient=0.986),  # EPI_ln -> NPP_SHARE
-        ModelVariable(BenefitSpatialVariable.NIGHT_LIGHT, coefficient=-0.053),  # nightLight
-        ModelVariable(ClimateSpatialVariable.DRY_DAYS, ln=True, coefficient=-2.351),  # dryDays_ln
-        ModelVariable(ClimateSpatialVariable.MEAN_ANNUAL_TEMPERATURE, ln=True, coefficient=1.278),  # Temp_mean_ln
-        ModelVariable(CountrySpatialVariable.GNI_PER_CAPITA, ln=True, coefficient=0.639),  # GNIPC_ln
-        ModelVariable(BenefitSpatialVariable.POP_DENSITY, ln=True, coefficient=0.252, buffer=10000)  # popDensity_buf_A_ln (buffer A = 10km)
+        ModelVariable(BenefitSpatialVariable.NIGHT_LIGHT, coefficient=-0.053, min_value=7.3, max_value=26.8),  # nightLight
+        ModelVariable(ClimateSpatialVariable.DRY_DAYS, ln=True, coefficient=-2.351, min_value=72, max_value=298),  # dryDays_ln
+        ModelVariable(ClimateSpatialVariable.MEAN_ANNUAL_TEMPERATURE, ln=True, coefficient=1.278, min_value=7.3, max_value=26.8),  # Temp_mean_ln
+        ModelVariable(CountrySpatialVariable.GNI_PER_CAPITA, ln=True, coefficient=0.639, min_value=520, max_value=49650),  # GNIPC_ln
+        ModelVariable(BenefitSpatialVariable.POP_DENSITY, ln=True, coefficient=0.252, buffer=10000, min_value=0.5, max_value=1403)  # popDensity_buf_A_ln (buffer A = 10km)
     ]
 
 
@@ -197,15 +197,15 @@ class Mangroves:
     }
 
     VARIABLES = [
-        ModelVariable(BenefitSpatialVariable.BIODIVERSITY_INTACTNESS, ln=True, coefficient=1.211),  # biodivIntactness_ln
-        ModelVariable(BenefitSpatialVariable.FRAGMENTATION, ln=True, coefficient=-0.895, buffer=10000),  # fragmentation_buf_A_ln (buffer A = 10km)
-        ModelVariable(ClimateSpatialVariable.DRY_DAYS, ln=True, coefficient=0.612),  # dryDays_ln
-        ModelVariable(ClimateSpatialVariable.HEAVY_RAIN_DAYS, ln=True, coefficient=-0.928),  # rainDays_ln -> HEAVY_RAIN_DAYS
-        ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ln=True, coefficient=1.475),  # Precip_total_ln
-        ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95, ln=True, coefficient=-2.507),  # NDVI_ln
+        ModelVariable(BenefitSpatialVariable.BIODIVERSITY_INTACTNESS, ln=True, coefficient=1.211, min_value=64, max_value=100),  # biodivIntactness_ln
+        ModelVariable(BenefitSpatialVariable.FRAGMENTATION, ln=True, coefficient=-0.895, buffer=10000, min_value=10, max_value=76),  # fragmentation_buf_A_ln (buffer A = 10km)
+        ModelVariable(ClimateSpatialVariable.DRY_DAYS, ln=True, coefficient=0.612, min_value=72, max_value=298),  # dryDays_ln
+        ModelVariable(ClimateSpatialVariable.HEAVY_RAIN_DAYS, ln=True, coefficient=-0.928, min_value=0, max_value=4.7),  # rainDays_ln -> HEAVY_RAIN_DAYS
+        ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ln=True, coefficient=1.475, min_value=0.4, max_value=2.8),  # Precip_total_ln
+        ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95, ln=True, coefficient=-2.507, min_value=24, max_value=69),  # NDVI_ln
         ModelVariable(BenefitSpatialVariable.LAND_COVER, coefficient=0.003, buffer=30000, lc=LandCoverGroup.MANGROVE),
-        ModelVariable(BenefitSpatialVariable.POP_DENSITY, ln=True, coefficient=0.309, buffer=10000),  # popDensity_buf_A_ln (buffer A = 10km)
-        ModelVariable(CountrySpatialVariable.GNI_PER_CAPITA, ln=True, coefficient=0.461)  # GNIPC_ln
+        ModelVariable(BenefitSpatialVariable.POP_DENSITY, ln=True, coefficient=0.309, buffer=10000, min_value=0.5, max_value=1403),  # popDensity_buf_A_ln (buffer A = 10km)
+        ModelVariable(CountrySpatialVariable.GNI_PER_CAPITA, ln=True, coefficient=0.461, min_value=520, max_value=49650)  # GNIPC_ln
     ]
 
     SUB_BIOMES = []
@@ -242,15 +242,15 @@ class Grassland:
     }
 
     VARIABLES = [
-        ModelVariable(BenefitSpatialVariable.BIODIVERSITY_INTACTNESS, ln=True, coefficient=6.928),  # biodivIntactness_ln
-        ModelVariable(BenefitSpatialVariable.NPP_SHARE, ln=True, coefficient=0.427),  # EPI_ln -> NPP_SHARE
-        ModelVariable(BenefitSpatialVariable.HUMAN_MODIF_INDEX, ln=True, coefficient=1.708),  # humanModification_ln
-        ModelVariable(ClimateSpatialVariable.DRY_DAYS, ln=True, coefficient=-7.536),  # dryDays_ln
-        ModelVariable(ClimateSpatialVariable.HEAVY_RAIN_DAYS, ln=True, coefficient=3.39),  # rainDays_ln -> HEAVY_RAIN_DAYS
-        ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ln=True, coefficient=-9.538),  # Precip_total_ln
-        ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95, ln=True, coefficient=3.432),  # NDVI_ln
-        ModelVariable(BenefitSpatialVariable.POP_DENSITY, ln=True, coefficient=-0.936, buffer=10000),# popDensity_buf_A_ln (buffer A = 10km)
-        ModelVariable(CountrySpatialVariable.GNI_PER_CAPITA, ln=True, coefficient=-1.309)  # GNIPC_ln
+        ModelVariable(BenefitSpatialVariable.BIODIVERSITY_INTACTNESS, ln=True, coefficient=6.928, min_value=64,max_value=100),
+        ModelVariable(BenefitSpatialVariable.NPP_SHARE, ln=True, coefficient=0.427),
+        ModelVariable(BenefitSpatialVariable.HUMAN_MODIF_INDEX, ln=True, coefficient=1.708, min_value=0, max_value=80),
+        ModelVariable(ClimateSpatialVariable.DRY_DAYS, ln=True, coefficient=-7.536, min_value=72, max_value=298),
+        ModelVariable(ClimateSpatialVariable.HEAVY_RAIN_DAYS, ln=True, coefficient=3.39, min_value=0, max_value=4.7),
+        ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ln=True, coefficient=-9.538, min_value=0.4,max_value=2.8),
+        ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95, ln=True, coefficient=3.432, min_value=24, max_value=70),
+        ModelVariable(BenefitSpatialVariable.POP_DENSITY, ln=True, coefficient=-0.936, buffer=10000, min_value=0.5,max_value=1403),
+        ModelVariable(CountrySpatialVariable.GNI_PER_CAPITA, ln=True, coefficient=-1.309, min_value=520, max_value=49650)
     ]
 
     ECOSYSTEM_SERVICES = [

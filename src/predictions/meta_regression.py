@@ -52,12 +52,16 @@ class Predict:
 
             # Add model variables
             for var_obj in model_class.VARIABLES:
-
+                if var_obj.max_value is not None:
+                    capped_value = min(var_obj.value, var_obj.max_value)
+                    capped_value = max(var_obj.min_value, capped_value)
+                else:
+                    capped_value = var_obj.value
                 if hasattr(var_obj, 'ln') and var_obj.ln:
-                    value = Predict.log_p1(var_obj.value)
+                    value = Predict.log_p1(capped_value)
 
                 else:
-                    value = var_obj.value
+                    value = capped_value
 
                 est = var_obj.coefficient * value
                 regression_sum += est
