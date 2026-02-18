@@ -152,6 +152,14 @@ class CalculationEngine:
                 cost_per_ha = St_Utils.extract_global_layers(cost_layers, **ssm.PROJECT_LOCATION.get())
                 converted_costs = [{k: v * conversion_factor for k, v in d.items()} for d in cost_per_ha]
 
+                # AV = PV * r/(1-(1+r)^(-1*years)) (from email from Luke Brander
+                #convert to annual values from present values
+                def annualize(pv, r, years):
+                    av = pv * r / (1 - (1 + r)**(-1 * years))
+
+                    return av
+                converted_costs = [{k: annualize(v, 0.05, 30) for k, v in d.items()} for d in cost_per_ha]
+
                 return converted_costs
 
             elif hasattr(model_class.COST_MODEL, 'NBS'):
