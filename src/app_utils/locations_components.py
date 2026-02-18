@@ -37,8 +37,8 @@ class LocationManager:
             st.warning("Use the drawing tools on the map to draw an area of interest and activate it!")
 
         st.subheader("Manual Input")
-        lat = st.number_input("Latitude", value=ssm.MANUAL_CENTROID.get()[0])
-        lon = st.number_input("Longitude", value=ssm.MANUAL_CENTROID.get()[1])
+        lat = st.number_input("Latitude", value=ssm.MANUAL_CENTROID.get()[0], min_value=-90.0, max_value=90.0)
+        lon = st.number_input("Longitude", value=ssm.MANUAL_CENTROID.get()[1], min_value=-180.0, max_value=180.0)
         area = st.number_input("Area (hectares)", value=ssm.MANUAL_AREA.get())
         ssm.MANUAL_CENTROID.set((lat, lon))
         ssm.MANUAL_AREA.set(area)
@@ -147,6 +147,9 @@ class LocationManager:
         except TypeError:
             ssm.LOCATION_ACTIVATED.set(False)
             st.error("Please draw a valid polygon first!")
+        except (AttributeError, TypeError):
+            ssm.LOCATION_ACTIVATED.set(False)
+            raise AttributeError("Please draw a valid polygon first!")
         except Exception as e:
             ssm.LOCATION_ACTIVATED.set(False)
             st.error(f"An error occurred: {e}")
@@ -170,47 +173,59 @@ class LocationManager:
         except TypeError:
             ssm.LOCATION_ACTIVATED.set(False)
             st.error("Please provide valid latitude, longitude, and area values first!")
+            return
         except Exception as e:
             ssm.LOCATION_ACTIVATED.set(False)
             st.error(f"An error occurred: {e}")
+            return
 
     def draw_map(self):
+        try:
+            map_center = [ssm.PROJECT_LOCATION.get()['lat'] , ssm.PROJECT_LOCATION.get()['lon']]
 
-        map_center = [ssm.PROJECT_LOCATION.get()['lat'] , ssm.PROJECT_LOCATION.get()['lon']]
+            m = folium.Map(location=map_center,
+                           zoom_start=ssm.ZOOM_LEVEL.get(),
+                           tiles=None,  # Start with no default tiles
+                           world_copy_jump=True,  # This helps with coordinate wrapping
+                           no_wrap=False)  # Allow coordinate wrapping
 
-        m = folium.Map(location=map_center,
-                       zoom_start=ssm.ZOOM_LEVEL.get(),
-                       tiles='cartodbpositron',
-                       world_copy_jump=True,  # This helps with coordinate wrapping
-                       no_wrap=False)  # Allow coordinate wrapping
+            # Add Esri satellite tile layer
+            folium.TileLayer(
+                tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                attr='Esri',
+                name='Satellite Background',
+                overlay=False,
+                control=True
+            ).add_to(m)
 
-        # Add Esri satellite tile layer
-        folium.TileLayer(
-            tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-            attr='Esri',
-            name='Satellite',
-            overlay=False,
-            control=True
-        ).add_to(m)
+            # Add CartoDB Positron as default with custom name
+            folium.TileLayer(
+                tiles='cartodbpositron',
+                name='Light Background',  # More legible name
+                overlay=False,
+                control=True
+            ).add_to(m)
 
-        # Add layer control to switch between tile layers
-        folium.LayerControl().add_to(m)
+            # Add layer control to switch between tile layers
+            folium.LayerControl().add_to(m)
 
-        self._show_saved_polygon(m)
-        # Add drawing functionality
-        self._add_drawing_tools(m)
+            self._show_saved_polygon(m)
+            # Add drawing functionality
+            self._add_drawing_tools(m)
 
-        # Display the map and capture drawing events
-        map_data = st_folium(m, key="polygon_map", height=700, use_container_width=True)
+            # Display the map and capture drawing events
+            map_data = st_folium(m, key="polygon_map", height=700, use_container_width=True)
 
-        # Process drawn polygons
-        if map_data['all_drawings'] and len(map_data['all_drawings']) > 0:
-            # Get the last drawn polygon
-            last_drawing = map_data['all_drawings'][-1]
+            # Process drawn polygons
+            if map_data['all_drawings'] and len(map_data['all_drawings']) > 0:
+                # Get the last drawn polygon
+                last_drawing = map_data['all_drawings'][-1]
 
-            if last_drawing['geometry']['type'] in ['Polygon', 'Rectangle']:
-                # Extract coordinates
-                self._save_drawing(last_drawing)
+                if last_drawing['geometry']['type'] in ['Polygon', 'Rectangle']:
+                    # Extract coordinates
+                    self._save_drawing(last_drawing)
+        except Exception as e:
+            st.error(f"An error occurred: {e}, please make sure to provide valid coordinates and try again.")
 
     @ssm.SAVED_POLYGON.skip_if_none()
     def _show_saved_polygon(self, m):
