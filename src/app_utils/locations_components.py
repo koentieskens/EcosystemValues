@@ -15,7 +15,14 @@ class LocationManager:
 
         st.subheader("Polygon Input")
         if st.button("Activate Polygon Input", key="activate_polygon", help="Click to activate polygon"):
-            self._activate_polygon()
+            try:
+                self._activate_polygon()
+            except AttributeError:
+                st.error("Please draw a valid polygon first!")
+            except TypeError:
+                st.error("Please draw a valid polygon first!")
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
 
         # Show which mode is active
         if ssm.LOCATION_ACTIVATED.get():
@@ -38,7 +45,10 @@ class LocationManager:
         ssm.TEMP_MANUAL_POLYGON.set(self.create_circle_gdf(lat, lon, area)[1])
 
         if st.button("Activate Manual Input", key="activate_manual_input", help="Click to activate manual input"):
-            self._activate_manual_input()
+            try:
+                self._activate_manual_input()
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
 
         if ssm.LOCATION_ACTIVATED.get():
             if ssm.LOCATION_TYPE.get() == 'manual':
@@ -51,29 +61,30 @@ class LocationManager:
         else:
             st.warning("Provide latitude, longitude, and area values and activate.")
 
-
-        if st.session_state.saved_polygon is not None:
-            self.clear_location()
+        self.clear_location()
 
     def clear_location(self):
         if st.button("🗑️ Clear Location", key="clear_location"):
-            ssm.SAVED_POLYGON.set(None)
-            ssm.POLYGON_CENTROID.set(None)
-            ssm.LOCATION_ACTIVATED.set(False)
-            ssm.BENEFITS_UPDATED.reset()
-            ssm.BENEFITS_EXTRACTION_DONE.reset()
-            ssm.COST_EXTRACTED_VALUES.reset()
-            ssm.BENEFITS_EXTRACTED_VALUES.reset()
-            ssm.COST_EXTRACTION_DONE.reset()
-            ssm.COST_DATA.reset()
-            ssm.DISPLAYED_COST.reset()
-            ssm.DISPLAYED_BENEFITS.reset()
-            ssm.COST_UPDATED.reset()
-            ssm.COST_UPDATE_FROM_EXTRACTION.reset()
-            ssm.SAVED_REGION.reset()
-            ssm.SAVED_COUNTRY.reset()
-            st.success("AOI cleared!")
-            st.rerun()
+            try:
+                ssm.SAVED_POLYGON.set(None)
+                ssm.POLYGON_CENTROID.set(None)
+                ssm.LOCATION_ACTIVATED.set(False)
+                ssm.BENEFITS_UPDATED.reset()
+                ssm.BENEFITS_EXTRACTION_DONE.reset()
+                ssm.COST_EXTRACTED_VALUES.reset()
+                ssm.BENEFITS_EXTRACTED_VALUES.reset()
+                ssm.COST_EXTRACTION_DONE.reset()
+                ssm.COST_DATA.reset()
+                ssm.DISPLAYED_COST.reset()
+                ssm.DISPLAYED_BENEFITS.reset()
+                ssm.COST_UPDATED.reset()
+                ssm.COST_UPDATE_FROM_EXTRACTION.reset()
+                ssm.SAVED_REGION.reset()
+                ssm.SAVED_COUNTRY.reset()
+                st.success("AOI cleared!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
 
     def create_circle_gdf(self, lat, lon, area):
         center_point = Point(lon, lat)
@@ -136,6 +147,9 @@ class LocationManager:
         except TypeError:
             ssm.LOCATION_ACTIVATED.set(False)
             st.error("Please draw a valid polygon first!")
+        except Exception as e:
+            ssm.LOCATION_ACTIVATED.set(False)
+            st.error(f"An error occurred: {e}")
 
     def _activate_manual_input(self):
 
@@ -156,6 +170,9 @@ class LocationManager:
         except TypeError:
             ssm.LOCATION_ACTIVATED.set(False)
             st.error("Please provide valid latitude, longitude, and area values first!")
+        except Exception as e:
+            ssm.LOCATION_ACTIVATED.set(False)
+            st.error(f"An error occurred: {e}")
 
     def draw_map(self):
 
@@ -167,6 +184,17 @@ class LocationManager:
                        world_copy_jump=True,  # This helps with coordinate wrapping
                        no_wrap=False)  # Allow coordinate wrapping
 
+        # Add Esri satellite tile layer
+        folium.TileLayer(
+            tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            attr='Esri',
+            name='Satellite',
+            overlay=False,
+            control=True
+        ).add_to(m)
+
+        # Add layer control to switch between tile layers
+        folium.LayerControl().add_to(m)
 
         self._show_saved_polygon(m)
         # Add drawing functionality
