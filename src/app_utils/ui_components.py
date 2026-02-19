@@ -64,6 +64,8 @@ class UIRenderer:
                     ssm.DISPLAYED_COST.reset()
                     ssm.DISPLAYED_BENEFITS.reset()
                     ssm.COST_UPDATE_FROM_EXTRACTION.reset()
+                    ssm.SIIKAMAKI_BENEFITS.reset()
+                    ssm.PREDICTION_SETS.reset()
 
         self._display_biome_selection()
 
@@ -668,14 +670,40 @@ class Sidebar:
                })
 
         if ssm.COST_DATA.get():
-            for cost_dict in ssm.COST_DATA.get():
-                for cost_name, cost_value in cost_dict.items():
-                    data_rows.append({
-                        'Category': 'Costs',
-                        'Variable': cost_name,
-                        'Value': cost_value,
-                        'Unit': 'USD per hectare'
-                    })
+            if hasattr(ssm.MODEL_CLASS.get().COST_MODEL, 'GLOBAL_LAYERS'):
+                for layer in ssm.MODEL_CLASS.get().COST_MODEL.GLOBAL_LAYERS:
+                        data_rows.append({
+                            'Category': 'Costs',
+                            'Variable': layer.variable.full_name,
+                            'Description': layer.variable.description,
+                            'Unit': 'USD per hectare per year',
+                            'Value': layer.cost_value,
+                            'Source': layer.variable.source
+                        })
+            if hasattr(ssm.MODEL_CLASS.get().COST_MODEL, 'NBS'):
+                source = None
+                value = None
+                for layer in ssm.MODEL_CLASS.get().COST_MODEL.NBS:
+
+                    if layer.value:
+                        data_rows.append({
+                            'Category': 'Costs',
+                            'Variable': layer.variable.full_name,
+                            'Description': layer.variable.description,
+                            'Unit': 'USD per hectare per year',
+                            'Source': layer.variable.data_source,
+                        })
+                        source = layer.variable.data_source
+                        value = layer.cost_value
+
+                data_rows.append({
+                    'Category': 'Costs',
+                    'Variable': 'Total Cost',
+                    'Description': 'Total cost for the selected NBS techniques',
+                    'Unit': 'USD per hectare per year',
+                    'Source': source,
+                    'Value': value
+                })
         # Create DataFrame and convert to CSV
         df = pd.DataFrame(data_rows)
 

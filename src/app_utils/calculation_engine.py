@@ -164,6 +164,7 @@ class CalculationEngine:
         """
         model_class = ssm.MODEL_CLASS.get()
         if st.button("Calculate Costs", type="primary", use_container_width=True):
+
             try:
                 lat = ssm.PROJECT_LOCATION.get()['lat']
                 lon = ssm.PROJECT_LOCATION.get()['lon']
@@ -183,11 +184,21 @@ class CalculationEngine:
                         av = pv * r / (1 - (1 + r)**(-1 * years))
 
                         return av
-                    converted_costs = [{k: annualize(v, 0.05, 30) for k, v in d.items()} for d in cost_per_ha]
+                    annualized_costs = [{k: annualize(v, 0.05, 30) for k, v in d.items()} for d in converted_costs]
 
-                    return converted_costs
+                    annualized_lookup = {k: v for cost_dict in annualized_costs for k, v in cost_dict.items()}
+
+                    # Update cost_layers items
+                    for var_obj in model_class.COST_MODEL.GLOBAL_LAYERS:
+                        if var_obj.variable.full_name in annualized_lookup:
+                            var_obj.cost_value = annualized_lookup[var_obj.variable.full_name]
+
+                    return annualized_costs
 
                 elif hasattr(model_class.COST_MODEL, 'NBS'):
+                    if not ssm.COST_EXTRACTION_DONE.get():
+                        st.warning('Please extract cost spatial variables first in menu above')
+                        return None
                     predicted_values = {}
                     nbss = [nbs for nbs in model_class.COST_MODEL.NBS if nbs.value]
                     # Cost values are in 2021 int $
@@ -201,6 +212,8 @@ class CalculationEngine:
 
                     st.success("Calculation Complete!")
                     result = [{key: float(value)} for key, value in predicted_values.items()]
+                    for nbs in nbss:
+                        nbs.cost_value = converted_value
                     return result
 
                 else:
