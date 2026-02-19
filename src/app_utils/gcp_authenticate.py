@@ -76,6 +76,7 @@ if __name__ == '__main__':
 
     gcp_auth = AuthenticateServiceAccount(gcp_credentials)
     gcp_auth.set_credentials()
+    gcp_auth.initialize_ee()
     from src.variables.global_layers import GlobalLayer
     from src.utils.spatial import Spatial
 
