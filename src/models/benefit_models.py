@@ -2,10 +2,11 @@ from src.variables.spatial_variable import BenefitSpatialVariable, ClimateSpatia
 from src.variables.variables import ModelVariable
 from ..variables.land_cover import LandCoverGroup
 from ..variables.ecosystem_service import EcosystemService
-from ..variables.global_layers import GlobalLayer
+from ..variables.global_layers import GlobalLayer, GlobalVectorLayer
 from src.variables.sub_biome import SubBiome
 from src.variables.value_type import ValueType
 from src.models import cost_models
+
 
 class TropicalForest:
     CONSTANTS = {
@@ -79,7 +80,7 @@ class TemparateForest:
     }
 
     VARIABLES = [
-        ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95, ln=True, coefficient=-6.854, min_value=25, max_value=70),
+        ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95, ln=True, coefficient=-6.854, min_value=0.25, max_value=0.70),
         ModelVariable(ClimateSpatialVariable.DRY_DAYS, ln=True, coefficient=2.663, min_value=72, max_value=298),
         ModelVariable(ClimateSpatialVariable.MEAN_ANNUAL_TEMPERATURE, ln=True, coefficient=-0.737, min_value=7.2, max_value=27),
         ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ln=True, coefficient=2.063, min_value=0.4, max_value=2.8),
@@ -202,7 +203,7 @@ class Mangroves:
         ModelVariable(ClimateSpatialVariable.DRY_DAYS, ln=True, coefficient=0.612, min_value=72, max_value=298),  # dryDays_ln
         ModelVariable(ClimateSpatialVariable.HEAVY_RAIN_DAYS, ln=True, coefficient=-0.928, min_value=0, max_value=4.7),  # rainDays_ln -> HEAVY_RAIN_DAYS
         ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ln=True, coefficient=1.475, min_value=0.4, max_value=2.8),  # Precip_total_ln
-        ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95, ln=True, coefficient=-2.507, min_value=24, max_value=69),  # NDVI_ln
+        ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95, ln=True, coefficient=-2.507, min_value=0.24, max_value=0.8),  # NDVI_ln
         ModelVariable(BenefitSpatialVariable.LAND_COVER, coefficient=0.003, buffer=30000, lc=LandCoverGroup.MANGROVE),
         ModelVariable(BenefitSpatialVariable.POP_DENSITY, ln=True, coefficient=0.309, buffer=10000, min_value=0.5, max_value=1403),  # popDensity_buf_A_ln (buffer A = 10km)
         ModelVariable(CountrySpatialVariable.GNI_PER_CAPITA, ln=True, coefficient=0.461, min_value=520, max_value=49650)  # GNIPC_ln
@@ -216,8 +217,10 @@ class Mangroves:
         ModelVariable(EcosystemService.WOOD_PROVISION, coefficient=-0.199),  # S_Wood_Prov
         ModelVariable(EcosystemService.WILD_ANIMAL_PROVISION, coefficient= -0.895),  # S_Wild_Animal_Prov
         ModelVariable(EcosystemService.SOIL_EROSION_REGULATION, coefficient=0.768),  # S_Soil_Erosion_Reg
-        ModelVariable(EcosystemService.GLOBAL_CLIMATE, coefficient=2.075)  # S_Global_Climate
+        #ModelVariable(EcosystemService.GLOBAL_CLIMATE, coefficient=2.075)  # S_Global_Climate
+        ModelVariable(EcosystemService.COASTAL_PROTECTION, global_layer=GlobalVectorLayer.MANGROVE_FLOOD_BENEFITS)
     ]
+
 
     VALUE_TYPES = [
         ModelVariable(ValueType.EXCHANGE_VALUE, coefficient=-0.058),  # Exchange value
@@ -225,13 +228,16 @@ class Mangroves:
     ]
 
     INTERACTIONS = []
+
     COST_MODEL = cost_models.BUSCH
+
     GLOBAL_LAYERS = [
         GlobalLayer.RESTORATION_OPPORTUNITY_COST,
         GlobalLayer.EXOTIC_IMPLEMENTATION_COST,
         GlobalLayer.NATIVE_IMPLEMENTATION_COST,
         GlobalLayer.REGENERATION_IMPLEMENTATION_COST
     ]
+
 
 
 class Grassland:
@@ -248,7 +254,7 @@ class Grassland:
         ModelVariable(ClimateSpatialVariable.DRY_DAYS, ln=True, coefficient=-7.536, min_value=72, max_value=298),
         ModelVariable(ClimateSpatialVariable.HEAVY_RAIN_DAYS, ln=True, coefficient=3.39, min_value=0, max_value=4.7),
         ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ln=True, coefficient=-9.538, min_value=0.4,max_value=2.8),
-        ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95, ln=True, coefficient=3.432, min_value=24, max_value=70),
+        ModelVariable(ClimateSpatialVariable.MEAN_NDVI_P95, ln=True, coefficient=3.432, min_value=0.24, max_value=0.70),
         ModelVariable(BenefitSpatialVariable.POP_DENSITY, ln=True, coefficient=-0.936, buffer=10000, min_value=0.5,max_value=1403),
         ModelVariable(CountrySpatialVariable.GNI_PER_CAPITA, ln=True, coefficient=-1.309, min_value=520, max_value=49650)
     ]
