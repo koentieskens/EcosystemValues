@@ -36,9 +36,8 @@ class IntensiveLandUseCost:
     QUADRATICS = [
         ModelVariable(ClimateSpatialVariable.MEAN_ANNUAL_TEMPERATURE, ihs=True, buffer=10000, coefficient=-0.5519715),
         ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ihs=True, buffer=10000, coefficient=0.5297093),
-        ModelVariable(BenefitSpatialVariable.SLOPE, ihs=True, buffer=10000, coefficient=0.9725203),
+        ModelVariable(BenefitSpatialVariable.SLOPE, ihs=True, buffer=10000, coefficient=-0.3114993),
         ModelVariable(CostInput.LATITUDE, ihs=True, coefficient=-0.616287),
-        ModelVariable(CostInput.ESTABLISHMENT_DAYS, ihs=True, coefficient=0.1205117),
         ModelVariable(CostInput.MAINTENANCE_DAYS, ihs=True, coefficient=-0.0594578),
     ]
 
@@ -90,7 +89,8 @@ class GrasslandCost:
     ]
 
     VARIABLES = [
-        ModelVariable(CountrySpatialVariable.GDP_PER_CAPITA_PPP_CONSTANT, ihs=True, buffer=10000, coefficient=0.2543724),
+        ModelVariable(CountrySpatialVariable.GDP_PER_CAPITA_PPP_CONSTANT, ihs=True, buffer=10000,
+                      coefficient=0.2543724),
         ModelVariable(ClimateSpatialVariable.MEAN_ANNUAL_TEMPERATURE, ihs=True, buffer=10000, coefficient=1.397741),
         ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ihs=True, buffer=10000, coefficient=-1.020533),
         ModelVariable(BenefitSpatialVariable.SLOPE, ihs=True, buffer=10000, coefficient=0.9725203)
@@ -99,9 +99,8 @@ class GrasslandCost:
     QUADRATICS = [
         ModelVariable(ClimateSpatialVariable.MEAN_ANNUAL_TEMPERATURE, ihs=True, buffer=10000, coefficient=-0.5519715),
         ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ihs=True, buffer=10000, coefficient=0.5297093),
-        ModelVariable(BenefitSpatialVariable.SLOPE, ihs=True, buffer=10000, coefficient=0.9725203),
+        ModelVariable(BenefitSpatialVariable.SLOPE, ihs=True, buffer=10000, coefficient=-0.3114993),
         ModelVariable(CostInput.LATITUDE, ihs=True, coefficient=-0.616287),
-        ModelVariable(CostInput.ESTABLISHMENT_DAYS, ihs=True, coefficient=0.1205117),
         ModelVariable(CostInput.MAINTENANCE_DAYS, ihs=True, coefficient=-0.0594578),
     ]
 
