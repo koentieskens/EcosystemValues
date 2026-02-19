@@ -3,6 +3,7 @@ from typing import Union
 from dataclasses import dataclass
 from typing import Optional, Any
 from src.variables.land_cover import LandCoverGroup
+from src.variables.global_layers import GlobalVectorLayer
 
 
 @dataclass
@@ -19,6 +20,7 @@ class ModelVariable:
     cost_value: float = 0
     cons_surplus: float = 0
     exchange_value: float = 0
+    global_layer: GlobalVectorLayer = None
 
 
     @property
