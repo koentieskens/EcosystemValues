@@ -23,7 +23,9 @@ class Predictions:
 
     def get_values(self):
         for variable in self.variables:
+           print(variable.variable.name)
            d = self.get_value(variable, self.lat, self.lon, radius=self.radius)
+           print(d)
            self.values_dict.update(d)
 
     @staticmethod
@@ -113,8 +115,13 @@ class Predictions:
             if not buffer:
                 buffer = 0
             buffer_size = Predictions.get_buffer_size(radius=radius, buffer=buffer)
-            value = Predictions.reduce_region(image, feature, buffer_size, variable.variable.scale)
-            value = {k: v * variable.variable.multiplier for k, v in value.items()}
+            try:
+                value = Predictions.reduce_region(image, feature, buffer_size, variable.variable.scale)
+                value = {k: v * variable.variable.multiplier for k, v in value.items()}
+            except Exception:
+                buffer_size = buffer_size.add(50000)
+                value = Predictions.reduce_region(image, feature, buffer_size, variable.variable.scale)
+                value = {k: v * variable.variable.multiplier for k, v in value.items()}
 
         return value
 
