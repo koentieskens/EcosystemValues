@@ -240,3 +240,14 @@ class EcosystemService:
         description='Recreation-related services are the ecosystem contributions, in particular through the biophysical characteristics and qualities of ecosystems, that enable people to use and enjoy the environment through direct, in-situ, physical and experiential interactions with the environment. This includes services to both locals and non-locals (i.e. visitors, including tourists). Recreation-related services may also be supplied to those undertaking recreational fishing and hunting. This is a final ecosystem service.',
         data_source='Brander et al., (2025)'
     )
+
+    COASTAL_PROTECTION = EcosystemServiceData(
+        name='Coastal protection services',
+        full_name='Coastal protection services',
+        SEEA_clas1='Regulating and Maintenance',
+        SEEA_clas2='Flood control services',
+        SEEA_clas3='Coastal protection services',
+        SEAA_Code='3.1',
+        description='Coastal protection services are ecosystem contributions of linear elements in the seascape (e.g. coral reefs, sand banks, dunes or mangrove ecosystems along the shore) to protecting the shore and thus mitigating the impacts of tidal surges or storms on local communities. These are final ecosystem services.',
+        data_source='Menendez et al., (2020)'
+    )

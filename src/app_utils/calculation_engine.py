@@ -31,7 +31,7 @@ class CalculationEngine:
                 for vt in model_class.VALUE_TYPES:
                     vt.value = 1.0
                     predicted_values = {}
-                    ess = [es for es in model_class.ECOSYSTEM_SERVICES if es.value]
+                    ess = [es for es in model_class.ECOSYSTEM_SERVICES if es.value and es.global_layer is None]
 
                     for es in ess:
                         predicted_value = Predict.predict_benefit(model_class, es, vt, ssm.PROJECT_LOCATION.get()['area'])
@@ -41,11 +41,31 @@ class CalculationEngine:
                             es.cons_surplus = predicted_value
                         if vt.variable.name == 'Exchange_Value':
                             es.exchange_value = predicted_value
+
+                    ess = [es for es in model_class.ECOSYSTEM_SERVICES if es.value and es.global_layer is not None]
+                    if len(ess) > 0:
+                        conversion_factor = CurrencyConverter.convert_usd_year(1, country, 2020, 2024)
+                        for es in ess:
+                            es.cons_surplus = 0
+                            val = St_Utils.extract_value_from_gpkg(es.global_layer, lat, lon)
+                            converted_value = val * conversion_factor
+                            es.exchange_value = converted_value
+                            predicted_values[es.variable.name] = converted_value
+
                     prediction_sets[vt.variable.full_name] = predicted_values
 
                 if hasattr(model_class, 'SIIKAMAKI'):
                     siikamaki_benefits = self._calculate_siikamaki()
                     ssm.SIIKAMAKI_BENEFITS.set(siikamaki_benefits)
+
+                ess = [es for es in model_class.ECOSYSTEM_SERVICES if es.value and es.global_layer is not None]
+                if len(ess) > 0:
+                    conversion_factor = CurrencyConverter.convert_usd_year(1, country, 2020, 2024)
+                    for es in ess:
+                        es.cons_surplus = 0
+                        val = St_Utils.extract_value_from_gpkg(es.global_layer, lat, lon)
+                        es.exchange_value = val * conversion_factor
+
 
                 ssm.BENEFITS_UPDATED.set(True)
                 st.success("Calculation Complete!")
