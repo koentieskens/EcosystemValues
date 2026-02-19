@@ -118,8 +118,8 @@ class Predict:
             nbss: list[ModelVariable],
             area_hectares: float,
             latitude: float,
-            est_days:int =10,
-            main_days:int =50) -> Optional[float]:
+            est_days:int =12, # 123 and 10 are median values of all cases with value != 1
+            main_days:int =10) -> Optional[float]:
         """Predict ecosystem service value using regression equation"""
         try:
             for var in model_class.INPUT_VARIABLES:
