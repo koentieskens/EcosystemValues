@@ -7,6 +7,10 @@ from pyproj import CRS, Transformer, Geod
 from ..extract_data.predictions import Predictions
 from ..utils.spatial import Spatial
 from ..utils import wb360
+import geopandas as gpd
+from shapely.geometry import Point
+import numpy as np
+
 
 
 class St_Utils:
@@ -46,6 +50,20 @@ class St_Utils:
         return l
 
     @staticmethod
+    def extract_value_from_gpkg(gpkg_layer, lat=0.0, lon=0.0):
+        gpkg_path = gpkg_layer.gcs_path
+        layer = gpkg_layer.layer
+        buffer = 0.01
+        bbox = (lon - buffer, lat - buffer, lon + buffer, lat + buffer)
+        gdf = gpd.read_file(gpkg_path, layer=layer, bbox=bbox)
+        point = Point(lon, lat)
+        intersecting = gdf[gdf.geometry.intersects(point)]
+        benefit = intersecting.iloc[0]['Ben_Stock_2020']
+        area = intersecting.iloc[0]['Mang_Ha_2020']
+        per_ha = benefit / area
+        return per_ha.item()
+
+    @staticmethod
     def extract_global_layer_with_polygon(layers, polygon_gdf):
         l = []
         for layer in layers:
@@ -69,28 +87,48 @@ class St_Utils:
     def get_location_info(lat, lon):
         """Get county and country information from coordinates"""
         try:
-            # to start the app with no location
             if lat == 0.0 and lon == 0.0:
                 return "", ""
 
-            # Get location data
-            location_data = reverse_geocode.get((lat, lon))
+            # Try original method
+            try:
+                location_data = reverse_geocode.get((lat, lon))
+                county = location_data.get('county', '')
+                country_code = location_data.get('country_code', '')
 
-            # Get county/city (using city as county equivalent)
-            county = location_data.get('county', '')
+                if country_code:
+                    country_obj = countries.get(country_code)
+                    country = country_obj.name if country_obj else country_code
+                    return county, country
+            except:
+                pass
 
-            # Get country name
-            country_code = location_data.get('country_code', '')
-            if country_code:
-                country_obj = countries.get(country_code)
-                country = country_obj.name if country_obj else country_code
-            else:
-                country = ''
+            # Fallback: find closest land point and try again
+            # Move point towards nearest land (simple approach)
+            search_radius = 0.5  # degrees
+            best_result = ("", "")
 
-            return county, country
-        except Exception as e:
+            for offset_lat in np.arange(-search_radius, search_radius, 0.1):
+                for offset_lon in np.arange(-search_radius, search_radius, 0.1):
+                    try:
+                        test_lat = lat + offset_lat
+                        test_lon = lon + offset_lon
+
+                        location_data = reverse_geocode.get((test_lat, test_lon))
+                        country_code = location_data.get('country_code', '')
+
+                        if country_code:
+                            country_obj = countries.get(country_code)
+                            country = country_obj.name if country_obj else country_code
+                            return "", country  # Return closest found country
+
+                    except:
+                        continue
+
             return "", ""
 
+        except Exception as e:
+            return "", ""
 
     @staticmethod
     def get_geodesic_area(polygon: Polygon):
