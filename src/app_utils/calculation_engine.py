@@ -4,6 +4,7 @@ from src.app_utils.utils import St_Utils
 from src.app_utils.session_states import SessionStateManager as ssm
 from src.app_utils.utils import CurrencyConverter
 import reverse_geocode
+import math
 
 from iso3166 import countries
 
@@ -38,19 +39,26 @@ class CalculationEngine:
                         converted_value = predicted_value * conversion_factor
                         predicted_values[es.variable.name] = converted_value
                         if vt.variable.name == 'Cons_Surplus':
-                            es.cons_surplus = predicted_value
+                            es.cons_surplus = converted_value
                         if vt.variable.name == 'Exchange_Value':
-                            es.exchange_value = predicted_value
+                            es.exchange_value = converted_value
 
                     ess = [es for es in model_class.ECOSYSTEM_SERVICES if es.value and es.global_layer is not None]
                     if len(ess) > 0:
                         conversion_factor = CurrencyConverter.convert_usd_year(1, country, 2020, 2024)
                         for es in ess:
-                            es.cons_surplus = 0
                             val = St_Utils.extract_value_from_gpkg(es.global_layer, lat, lon)
                             converted_value = val * conversion_factor
-                            es.exchange_value = converted_value
-                            predicted_values[es.variable.name] = converted_value
+                            #making sure it returns 0 if Menendez returns nan
+                            if not isinstance(converted_value, (int, float)) or math.isnan(converted_value):
+                                converted_value = 0
+
+                            if vt.variable.name == 'Cons_Surplus':
+                                es.cons_surplus = 0
+                                predicted_values[es.variable.name] = 0
+                            if vt.variable.name == 'Exchange_Value':
+                                es.exchange_value = converted_value
+                                predicted_values[es.variable.name] = converted_value
 
                     prediction_sets[vt.variable.full_name] = predicted_values
 
@@ -58,19 +66,13 @@ class CalculationEngine:
                     siikamaki_benefits = self._calculate_siikamaki()
                     ssm.SIIKAMAKI_BENEFITS.set(siikamaki_benefits)
 
-                ess = [es for es in model_class.ECOSYSTEM_SERVICES if es.value and es.global_layer is not None]
-                if len(ess) > 0:
-                    conversion_factor = CurrencyConverter.convert_usd_year(1, country, 2020, 2024)
-                    for es in ess:
-                        es.cons_surplus = 0
-                        val = St_Utils.extract_value_from_gpkg(es.global_layer, lat, lon)
-                        es.exchange_value = val * conversion_factor
-
-
                 ssm.BENEFITS_UPDATED.set(True)
                 st.success("Calculation Complete!")
+            except IndexError:
+                st.error("We could not find appropriate benefit predictions for your location. Please make sure your location is suitable for the selected biome.")
             except Exception as e:
                 st.error(f"Error calculating benefits: {e}")
+
 
     @staticmethod
     def convert_to_usd(value, country, from_year=2020, to_year=2024):
