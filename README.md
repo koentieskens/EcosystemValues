@@ -4,7 +4,7 @@ A Streamlit web application that produces **site-specific estimates of ecosystem
 
 Users define a project location and area, select a biome, and the tool automatically fetches spatial data from Google Earth Engine and Google Cloud Storage to run calibrated meta-regression models. The result is a set of **per-hectare-per-year benefit estimates** (in current USD) and **intervention cost estimates** for the chosen site.
 
-The tool is designed to support early-stage decision-making — delivering consistent, transparent numbers quickly, without requiring specialist GIS or modelling skills.
+The tool is designed to support early-stage decision-making, delivering consistent, transparent numbers quickly, without requiring specialist GIS or modeling skills.
 
 ---
 
@@ -13,7 +13,7 @@ The tool is designed to support early-stage decision-making — delivering consi
 - **Five biome models** — Tropical Forest, Temperate Forest, Intensive Land Use, Mangroves, Grassland
 - **Automatic spatial variable extraction** from Google Earth Engine (climate, land cover, biodiversity, population, economics)
 - **Meta-regression benefit estimates** across multiple SEEA-aligned ecosystem service categories
-- **Two cost modelling approaches** — global raster layers (Busch et al. 2024) for forest/mangrove biomes; NBS-type regression model (WOCAT data) for land-use biomes
+- **Two cost modeling approaches** — global raster layers (Busch et al. 2024) for forest biomes; NBS-type regression model (WOCAT data) for agricultural biomes
 - **PPP-adjusted currency conversion** to 2024 USD via the World Bank Data360 API
 - **CSV export** of all variables, benefits, and costs
 - **Interactive map** for drawing or manually entering project area
@@ -122,67 +122,86 @@ Once benefits are calculated, a **Download CSV** button appears in the sidebar. 
 ## Ecosystem services by biome
 
 ### Tropical Forest
-| Service | SEEA Code |
-|---------|-----------|
-| Wood Provision | 1.5 |
-| Wild Fish Provision | 1.6 |
-| Air Filtration | 2.4 |
-| Pollination | 2.17 |
-| *Global layers (Siikamäki):* Recreation · Non-wood forest products · Water services · Habitat & species protection | |
-
+| Ecosystem Service                           | Grouping                     | Value estimation source           |
+|---------------------------------------------|------------------------------|-----------------------------------|
+| Wood Provision                              | -                            | ESVD meta-analytic value function |  
+| Wild Fish Provision                         | -                            | ESVD meta-analytic value function |
+| Air Filtration                              | -                            | ESVD meta-analytic value function |
+| Pollination                                 | -                            | ESVD meta-analytic value function |
+| Wild animals, plants and other provisioning | Non-wood forest products     | Siikamäki et al. 2024 global data |
+| Water supply                                | Forest water services        | Siikamäki et al. 2024 global data |
+| Rainfall pattern regulation                 | Forest water services        | Siikamäki et al. 2024 global data |
+| Soil erosion control                        | Forest water services        | Siikamäki et al. 2024 global data |
+| Water purification                          | Forest water services        | Siikamäki et al. 2024 global data |
+| Water flow regulation                       | Forest water services        | Siikamäki et al. 2024 global data |
+| River flood mitigation                      | Forest water services        | Siikamäki et al. 2024 global data |
+| Recreation-related                          | Recreation, hunting, fishing | Siikamäki et al. 2024 global data |
+| Ecosystem and species appreciation          | Recreation, hunting, fishing | Siikamäki et al. 2024 global data |
+ 
 ### Temperate Forest
-| Service | SEEA Code |
-|---------|-----------|
-| Wood Provision | 1.5 |
-| Air Filtration | 2.4 |
-| Soil Quality Regulation | 2.5 |
-| *Global layers (Siikamäki):* Recreation · Non-wood forest products · Water services · Habitat & species protection | |
+| Ecosystem Service                           | Grouping                     | Value estimation source           |
+|---------------------------------------------|------------------------------|-----------------------------------|
+| Wood Provision                              | -                            | ESVD meta-analytic value function |
+| Air Filtration                              | -                            | ESVD meta-analytic value function |
+| Soil quality regulation                     | -                            | ESVD meta-analytic value function |
+| Wild animals, plants and other provisioning | Non-wood forest products     | Siikamäki et al. 2024 global data |
+| Water supply                                | Forest water services        | Siikamäki et al. 2024 global data |
+| Rainfall pattern regulation                 | Forest water services        | Siikamäki et al. 2024 global data |
+| Soil erosion control                        | Forest water services        | Siikamäki et al. 2024 global data |
+| Water purification                          | Forest water services        | Siikamäki et al. 2024 global data |
+| Water flow regulation                       | Forest water services        | Siikamäki et al. 2024 global data |
+| River flood mitigation                      | Forest water services        | Siikamäki et al. 2024 global data |
+| Recreation-related                          | Recreation, hunting, fishing | Siikamäki et al. 2024 global data |
+| Ecosystem and species appreciation          | Recreation, hunting, fishing | Siikamäki et al. 2024 global data |
 
 ### Intensive Land Use
-| Service | SEEA Code |
-|---------|-----------|
-| Crop Provision | 1.1 |
-| Wood Provision | 1.5 |
-| Livestock Provision | 1.3 |
-| Pollination | 2.17 |
-| Soil Erosion Control | 2.6 |
-| Recreation | 3.1 |
-| Visual Amenity | 3.2 |
+| Ecosystem Service    | Value estimation source           |
+|----------------------|-----------------------------------|
+| Crop Provision       | ESVD meta-analytic value function |
+| Wood Provision       | ESVD meta-analytic value function |
+| Livestock Provision  | ESVD meta-analytic value function |
+| Pollination          | ESVD meta-analytic value function |
+| Soil Erosion Control | ESVD meta-analytic value function |
+| Recreation           | ESVD meta-analytic value function |
+| Visual Amenity       | ESVD meta-analytic value function |
 
 ### Mangroves
-| Service | SEEA Code |
-|---------|-----------|
-| Wild Fish Provision | 1.6 |
-| Aquaculture Provision | 1.4 |
-| Wood Provision | 1.5 |
-| Wild Animals Provision | 1.7 |
-| Soil Erosion Control | 2.6 |
-| Coastal Protection (Menendez et al. 2020) | 2.14 |
+| Ecosystem Service      | Value estimation source                    |
+|------------------------|--------------------------------------------|
+| Wild Fish Provision    | ESVD meta-analytic value function          |
+| Aquaculture Provision  | ESVD meta-analytic value function          |
+| Livestock Provision    | ESVD meta-analytic value function          |
+| Wood Provision         | ESVD meta-analytic value function          |
+| Wild Animals Provision | ESVD meta-analytic value function          |
+| Soil Erosion Control   | ESVD meta-analytic value function          |
+| Coastal Protection     | Menendez et al, (2020) process based model |
+
 
 ### Grassland
-| Service | SEEA Code |
-|---------|-----------|
-| Wild Animals Provision | 1.7 |
-| Water Supply | 1.9 |
-| Grazed Biomass Provision | 1.2 |
-| Livestock Provision | 1.3 |
-| Pollination | 2.17 |
-| Nutrient Retention | 2.9 |
-| River Flood Mitigation | 2.14 |
-| Soil Erosion Control | 2.6 |
-| Recreation | 3.1 |
+| Ecosystem Service        | Value estimation source            |
+|--------------------------|------------------------------------|
+| Water Supply             | ESVD meta-analytic value function  |
+| Wild Animals Provision   | ESVD meta-analytic value function  |
+| Grazed Biomass Provision | ESVD meta-analytic value function  |
+| Livestock Provision      | ESVD meta-analytic value function  |
+| Pollination              | ESVD meta-analytic value function  |
+| Nutrient Retention       | ESVD meta-analytic value function  |
+| River Flood Mitigation   | ESVD meta-analytic value function  |
+| Soil Erosion Control     | ESVD meta-analytic value function  |
+| Recreation               | ESVD meta-analytic value function  |
 
 ---
 
 ## Cost models
 
-| Biome | Model | Source |
-|-------|-------|--------|
-| Tropical Forest | Global raster layers (opportunity cost + implementation cost) | Busch et al. (2024) *Nature Climate Change* |
-| Temperate Forest | Global raster layers | Busch et al. (2024) |
-| Mangroves | Global raster layers | Busch et al. (2024) |
-| Intensive Land Use | Meta-regression (NBS type × site variables) | Reynolds et al. (2024) / WOCAT |
-| Grassland | Meta-regression (NBS type × site variables) | Reynolds et al. (2024) / WOCAT |
+| Biome              | Model                            | Source                          |
+|--------------------|----------------------------------|---------------------------------|
+| Tropical Forest    | Global raster layers             | Busch et al. (2024)             |
+| Temperate Forest   | Global raster layers             | Busch et al. (2024)             |
+| Mangroves          | Global raster layers             | Busch et al. (2024) global data |
+| Intensive Land Use | Meta-regression                  | Reynolds et al. (2024) / WOCAT  |
+| Grassland          | Meta-regression                  | Reynolds et al. (2024) / WOCAT  |
+
 
 All outputs are converted to **2024 USD/ha/yr** using World Bank PPP conversion factors and local inflation adjustment.
 
@@ -220,52 +239,24 @@ src/
 
 ---
 
-## Running the tests
-
-```bash
-# Install test dependencies (already in requirements.txt)
-pip install pytest pytest-mock
-
-# Run all tests
-pytest tests/ -v
-
-# Run only unit tests (no Streamlit runner)
-pytest tests/ -v --ignore=tests/test_app_streamlit.py
-
-# Run Streamlit integration tests
-pytest tests/test_app_streamlit.py -v
-```
-
-The test suite (51 tests) runs fully offline — all GEE, GCS, World Bank, and Streamlit session state calls are mocked.
-
-| File | Coverage |
-|------|----------|
-| `test_meta_regression.py` | Math helpers, prediction pipeline, area limiter |
-| `test_spatial.py` | CRS detection, circle geometry, WB gap-fill, COG value extraction |
-| `test_utils.py` | Geodesic area, location lookup, PPP/USD conversion, WB360 API |
-| `test_calculation_engine.py` | CalculationEngine with all external deps mocked |
-| `test_app_streamlit.py` | Full app via `streamlit.testing.v1.AppTest` — biome buttons, location, benefits, costs, GEE extract |
-
----
-
 ## Data sources
 
-| Data | Source |
-|------|--------|
-| Ecosystem service value functions | Brander et al. (2025) |
-| Forest global benefit layers | Siikamäki et al. (2024), World Bank |
-| Mangrove coastal protection | Menendez et al. (2020) |
-| Forest/mangrove cost layers | Busch et al. (2024), *Nature Climate Change* |
-| Land use cost model | Reynolds et al. (2024) / WOCAT SLM database |
-| Biodiversity Intactness Index | Newbold et al. (2016) |
-| Human Modification Index | Kennedy et al. (2020) |
-| Population density | CIESIN GPWv4 |
-| Climate variables | ERA5-Land (ECMWF) |
-| Land cover | ESA CCI Global Land Cover |
-| PPP conversion | World Bank Data360 / IMF WEO |
+| Data                                   | Source                                      |
+|----------------------------------------|---------------------------------------------|
+| ESVD Ecosystem service value functions | Brander et al. (2025)                       |
+| Forest global benefit layers           | Siikamäki et al. (2024)                     |
+| Mangrove coastal protection            | Menendez et al. (2020)                      |
+| Forest/mangrove cost layers            | Busch et al. (2024)                         |
+| Land use cost model                    | Reynolds et al. (2024) / WOCAT SLM database |
+| Biodiversity Intactness Index          | Newbold et al. (2016)                       |
+| Human Modification Index               | Kennedy et al. (2020)                       |
+| Population density                     | CIESIN GPWv4                                |
+| Climate variables                      | ERA5-Land (ECMWF)                           |
+| Land cover                             | ESA CCI Global Land Cover                   |
+| PPP conversion                         | World Bank Data360 / IMF WEO                |
 
 ---
 
 ## License
 
-This project is developed by the World Bank Group. Please refer to the repository for licence terms.
+TBD
