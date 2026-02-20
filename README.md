@@ -22,12 +22,15 @@ The tool is designed to support early-stage decision-making, delivering consiste
 
 ## Screenshots
 
-| Step                                   | View                                       |
-|----------------------------------------|--------------------------------------------|
-| Biome selection                        | ![](docs/screenshots/biome_selection.png)  |
-| Project location and spatial variables | ![](docs/screenshots/project_location.png) |
-| Benefit results                        | ![](docs/screenshots/es_benefits.png)      |
-| Cost results                           | ![](docs/screenshots/nbs_costs.png)        |
+
+### Biome selection 
+![](docs/screenshots/biome_selection.png)
+### Project location and spatial variables
+![](docs/screenshots/project_location.png) 
+### Benefit results
+![](docs/screenshots/es_benefits.png)      
+### Cost results
+![](docs/screenshots/nbs_costs.png)        
 
 ---
 
@@ -92,33 +95,33 @@ Click the biome that best represents your project area. Some biomes require a su
 | Mangroves | — |
 | Grassland | — |
 
-### 2 — Define the project area
+### 2  Define the project area
 
-Either **draw a polygon** on the interactive satellite map using the drawing tools, or enter **latitude, longitude, and area (ha)** manually and click **Activate Manual Input**.
+Either **draw a polygon** on the interactive satellite map using the drawing tools and click activate polygon, or enter **latitude, longitude, and area (ha)** manually and click **Activate Manual Input**.
 
 Once a location is active, the sidebar shows your coordinates, country, and area.
 
-### 3 — Extract spatial variables
+### 3  Extract spatial variables
 
-Under **Spatial Predictor Variables**, click **Extract Spatial Values from GEE** for the Benefit and/or Cost tabs. This fetches site-specific values (temperature, precipitation, biodiversity intactness, population density, GNI, etc.) from Google Earth Engine and fills the input fields automatically. You can override any value manually.
+Under **Spatial Predictor Variables**, click **Extract Spatial Values from GEE** for the Benefit and/or Cost tabs. This fetches site-specific values (temperature, precipitation, biodiversity intactness, population density, GNI, etc.) from Google Earth Engine and fills the input fields automatically. You can override any value manually, e.g. for simulating interventions.
 
-### 4 — Select ecosystem services and calculate benefits
+### 4  Select ecosystem services and calculate benefits
 
-Check the ecosystem services you want to include, then click **Calculate Benefits**. Results appear as USD/ha/yr for two valuation approaches — Exchange Value and Consumer Surplus.
+Check the ecosystem services you want to include, then click **Calculate Benefits**. Results appear as USD/ha/yr for two valuation approaches: Exchange Value and Consumer Surplus.
 
-For forest biomes an additional set of globally-mapped values (Siikamäki et al. 2024) is also available.
 
-### 5 — Select intervention type and calculate costs
+### 5  Select intervention type and calculate costs
 
-Check the intervention types relevant to your project, then click **Calculate Costs**. Results are shown in USD/ha/yr.
+Check the intervention types relevant to your project, then click **Calculate Costs**. Total estimated costs are shown in USD/ha/yr.
 
-### 6 — Export results
+### 6  Export results
 
-Once benefits are calculated, a **Download CSV** button appears in the sidebar. The export contains location metadata, all spatial variable values, and the full benefit and cost table.
+Once benefits are calculated, a **Download CSV** button appears in the sidebar. The exported csv contains location metadata, all spatial variable values, and the full benefit and cost table.
 
 ---
 
 ## Ecosystem services by biome
+NBS Valuation Tool currently supports the benefit estimates for a range of biome specific ecosystem services, following SEEA classification. They are listed below. 
 
 ### Tropical Forest
 | Ecosystem Service                           | Grouping                     | Value estimation source           |
