@@ -1,5 +1,6 @@
 import sys
 import os
+import math
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from src.models.benefit_models import (
@@ -7,6 +8,7 @@ from src.models.benefit_models import (
     Mangroves, Grassland)
 import streamlit as st
 from src.app_utils.utils import St_Utils
+from src.extract_data.predictions import Predictions
 import base64
 from src.app_utils.session_states import SessionStateManager as ssm
 import pandas as pd
@@ -222,32 +224,45 @@ class UIRenderer:
         return value
 
     def _get_variable_values_from_gee(self, vartype='cost'):
-        ss = st.session_state
         if vartype == 'cost':
             model = ssm.MODEL_CLASS.get().COST_MODEL
         else:
             model = ssm.MODEL_CLASS.get()
 
-        with st.spinner(f"Extracting values from Google Earth Engine..."):
-            lat = ssm.PROJECT_LOCATION.get()['lat']
-            lon = ssm.PROJECT_LOCATION.get()['lon']
-            area = ssm.PROJECT_LOCATION.get()['area']
-            extracted_values, error = St_Utils.extract_values(model, lat, lon, area)
-            if error:
-                st.error(f"Extraction failed: {error}")
-            else:
-                if vartype == 'cost':
-                    ssm.COST_EXTRACTED_VALUES.set(extracted_values)
-                    ssm.COST_EXTRACTION_DONE.set(True)
-                    ssm.COST_UPDATE_FROM_EXTRACTION.set(True)
-                    st.success(f"Extracted {len(extracted_values)} variables")
-                    st.rerun()
-                if vartype == 'benefit':
-                    ssm.BENEFITS_EXTRACTED_VALUES.set(extracted_values)
-                    ssm.BENEFITS_EXTRACTION_DONE.set(True)
-                    ssm.BENEFITS_UPDATE_FROM_EXTRACTION.set(True)
-                    st.success(f"Extracted {len(extracted_values)} variables")
-                    st.rerun()
+        lat = ssm.PROJECT_LOCATION.get()['lat']
+        lon = ssm.PROJECT_LOCATION.get()['lon']
+        area = ssm.PROJECT_LOCATION.get()['area']
+        area_m2 = area * 10000
+        radius = int(math.sqrt(area_m2 / math.pi))
+
+        variables = model.VARIABLES
+        n = len(variables)
+
+        progress_bar = st.progress(0, text="Starting extraction...")
+        try:
+            p = Predictions(variables, lat, lon, radius=radius)
+            for i, variable in enumerate(variables):
+                display_name = variable.variable.full_name
+                progress_bar.progress((i + 1) / n, text=f"Extracting: {display_name}")
+                d = p.get_value(variable, lat, lon, radius=radius)
+                p.values_dict.update(d)
+
+            progress_bar.progress(1.0, text="Extraction complete")
+            extracted_values = p.values_dict
+
+            if vartype == 'cost':
+                ssm.COST_EXTRACTED_VALUES.set(extracted_values)
+                ssm.COST_EXTRACTION_DONE.set(True)
+                ssm.COST_UPDATE_FROM_EXTRACTION.set(True)
+            if vartype == 'benefit':
+                ssm.BENEFITS_EXTRACTED_VALUES.set(extracted_values)
+                ssm.BENEFITS_EXTRACTION_DONE.set(True)
+                ssm.BENEFITS_UPDATE_FROM_EXTRACTION.set(True)
+            st.rerun()
+
+        except Exception as e:
+            progress_bar.empty()
+            st.error(f"Extraction failed: {e}")
 
 
     def ecosystem_services_menu(self):
