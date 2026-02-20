@@ -22,13 +22,12 @@ The tool is designed to support early-stage decision-making, delivering consiste
 
 ## Screenshots
 
-| Step | View |
-|------|------|
-| Biome selection | Five clickable biome cards |
-| Project location | Draw polygon on satellite map or enter lat/lon/area manually |
-| Spatial variables | Extracted GEE values shown per predictor; manual override supported |
-| Benefit results | Per-service USD/ha/yr metrics with Exchange Value and Consumer Surplus tabs |
-| Cost results | Per-intervention USD/ha/yr metrics |
+| Step                                   | View                                       |
+|----------------------------------------|--------------------------------------------|
+| Biome selection                        | ![](docs/screenshots/biome_selection.png)  |
+| Project location and spatial variables | ![](docs/screenshots/project_location.png) |
+| Benefit results                        | ![](docs/screenshots/es_benefits.png)      |
+| Cost results                           | ![](docs/screenshots/nbs_costs.png)        |
 
 ---
 
