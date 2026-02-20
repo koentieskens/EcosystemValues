@@ -33,9 +33,9 @@ class UIRenderer:
     BIOME_LOGOS = {
         'tropical_forest': '🌴',
         'temperate_forest': '🌲',
-        'intensive_land_use': '🏭',
+        'intensive_land_use': '🌽',
         'mangroves': '🌿',
-        'grassland': '🌾'
+        'grassland': '☘️'
     }
 
     def __init__(self):
@@ -66,15 +66,18 @@ class UIRenderer:
                     ssm.COST_UPDATE_FROM_EXTRACTION.reset()
                     ssm.SIIKAMAKI_BENEFITS.reset()
                     ssm.PREDICTION_SETS.reset()
+                    st.rerun()
 
         self._display_biome_selection()
 
     def _render_biome_button(self, key, display_name):
         """Returns True if button was clicked"""
         logo = self.BIOME_LOGOS.get(key, '🌱')
+        is_selected = ssm.ECOSYSTEM_TYPE.get() == key
         return st.button(
             f"{logo}\n\n{display_name}",
             key=f"biome_select_{key}",
+            type="primary" if is_selected else "secondary",
             use_container_width=True
         )
 
@@ -127,8 +130,19 @@ class UIRenderer:
                 model = ssm.MODEL_CLASS.get()
 
             if hasattr(model, 'VARIABLES'):
+                GROUP_ORDER = ['Biodiversity', 'Landscape', 'Climate', 'Socio-economic', 'Other']
+
+                groups = {}
                 for var_obj in model.VARIABLES:
-                    var_obj.value = self._spatial_variable_field(var_obj, vartype=vartype)
+                    g = getattr(var_obj, 'group', None) or 'Other'
+                    groups.setdefault(g, []).append(var_obj)
+
+                for group_name in GROUP_ORDER:
+                    if group_name not in groups:
+                        continue
+                    st.markdown(f"**{group_name}**")
+                    for var_obj in groups[group_name]:
+                        var_obj.value = self._spatial_variable_field(var_obj, vartype=vartype)
 
                 if st.button("Extract Spatial Values from GEE", type="primary",
                              use_container_width=True,
@@ -288,22 +302,27 @@ class UIRenderer:
 
         value_type = [vt for vt in ssm.MODEL_CLASS.get().VALUE_TYPES if vt.variable.full_name == benefit_type][0]
         st.info(f"{value_type.variable.get_tooltip()}")
-        cols = st.columns(2)
+
         predicted_values = predicted_sets[benefit_type]
         if siikamaki_benefits is not None:
             for benefit in siikamaki_benefits:
                 predicted_values.update(benefit)
-        total_value = 0.0
-        for j, key in enumerate(predicted_values):
-            with cols[j % 2]:
-                st.metric(
-                    label=key,
-                    value=f"${predicted_values[key]:,.2f} per ha",
-                    help="2024 USD per hectare per year"
-                )
-            total_value += predicted_values[key]
-        st.markdown(f"<h3 style='text-align: right;'>Total Value per ha: ${total_value:,.2f}</h3>",
-                    unsafe_allow_html=True)
+
+        rows = [{"Ecosystem Service": k, "Value (USD/ha/yr)": v} for k, v in predicted_values.items()]
+        total_value = sum(predicted_values.values())
+        rows.append({"Ecosystem Service": "Total", "Value (USD/ha/yr)": total_value})
+
+        df = pd.DataFrame(rows)
+
+        def bold_last_row(row):
+            return ["font-weight: bold" if row.name == len(df) - 1 else "" for _ in row]
+
+        styled = (
+            df.style
+            .format({"Value (USD/ha/yr)": "${:,.2f}"})
+            .apply(bold_last_row, axis=1)
+        )
+        st.dataframe(styled, width='stretch', hide_index=True)
 
 
     def cost_variables_menu(self):
@@ -341,22 +360,31 @@ class UIRenderer:
 
     def display_costs(self, cost_per_ha):
 
+        rows = []
         for cost in cost_per_ha:
+            k = list(cost.keys())[0]
+            v = list(cost.values())[0]
             try:
-                k = [k for k, v in cost.items()][0]
-                v = [v for k, v in cost.items()][0]
-                st.metric(
-                    label=k,
-                    value=f"${v:,.2f} per ha",
-                    help="Values are in 2024 USD"
-                )
+                rows.append({"Intervention": k, "Cost (USD/ha/yr)": float(v)})
+            except (TypeError, ValueError):
+                rows.append({"Intervention": k, "Cost (USD/ha/yr)": None})
 
-            except TypeError:
-                k = [k for k, v in cost.items()][0]
-                st.metric(
-                    label=k,
-                    value=f"No cost data available for location"
-                )
+        if rows:
+            total_value = sum(r["Cost (USD/ha/yr)"] for r in rows if r["Cost (USD/ha/yr)"] is not None)
+            rows.append({"Intervention": "Total", "Cost (USD/ha/yr)": total_value})
+
+            df = pd.DataFrame(rows)
+
+            def bold_last_row(row):
+                return ["font-weight: bold" if row.name == len(df) - 1 else "" for _ in row]
+
+            styled = (
+                df.style
+                .format({"Cost (USD/ha/yr)": lambda v: f"${v:,.2f}" if v is not None else "No data available"})
+                .apply(bold_last_row, axis=1)
+            )
+            st.dataframe(styled, width='stretch', hide_index=True)
+
         ssm.COST_UPDATED.set(True)
 
     @staticmethod
@@ -558,7 +586,7 @@ class Sidebar:
                                .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
                                0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
                     </svg>
-                    For more information and how to use
+                    GitHub Repository
                 </a>
                 """,
                 unsafe_allow_html=True

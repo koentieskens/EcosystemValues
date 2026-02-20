@@ -27,10 +27,10 @@ class IntensiveLandUseCost:
     ]
 
     VARIABLES = [
-        ModelVariable(CountrySpatialVariable.GDP_PER_CAPITA_PPP_CONSTANT, ihs=True, buffer=10000, coefficient=0.2543724),
-        ModelVariable(ClimateSpatialVariable.MEAN_ANNUAL_TEMPERATURE, ihs=True, buffer=10000, coefficient=1.397741),
-        ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ihs=True, buffer=10000, coefficient=-1.020533),
-        ModelVariable(BenefitSpatialVariable.SLOPE, ihs=True, buffer=10000, coefficient=0.9725203)
+        ModelVariable(CountrySpatialVariable.GDP_PER_CAPITA_PPP_CONSTANT, ihs=True, buffer=10000, coefficient=0.2543724, group='Socio-economic'),
+        ModelVariable(ClimateSpatialVariable.MEAN_ANNUAL_TEMPERATURE, ihs=True, buffer=10000, coefficient=1.397741, group='Climate'),
+        ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ihs=True, buffer=10000, coefficient=-1.020533, group='Climate'),
+        ModelVariable(BenefitSpatialVariable.SLOPE, ihs=True, buffer=10000, coefficient=0.9725203, group='Landscape')
     ]
 
     QUADRATICS = [
@@ -89,11 +89,10 @@ class GrasslandCost:
     ]
 
     VARIABLES = [
-        ModelVariable(CountrySpatialVariable.GDP_PER_CAPITA_PPP_CONSTANT, ihs=True, buffer=10000,
-                      coefficient=0.2543724),
-        ModelVariable(ClimateSpatialVariable.MEAN_ANNUAL_TEMPERATURE, ihs=True, buffer=10000, coefficient=1.397741),
-        ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ihs=True, buffer=10000, coefficient=-1.020533),
-        ModelVariable(BenefitSpatialVariable.SLOPE, ihs=True, buffer=10000, coefficient=0.9725203)
+        ModelVariable(CountrySpatialVariable.GDP_PER_CAPITA_PPP_CONSTANT, ihs=True, buffer=10000, coefficient=0.2543724, group='Socio-economic'),
+        ModelVariable(ClimateSpatialVariable.MEAN_ANNUAL_TEMPERATURE, ihs=True, buffer=10000, coefficient=1.397741, group='Climate'),
+        ModelVariable(ClimateSpatialVariable.TOTAL_ANNUAL_PRECIPITATION, ihs=True, buffer=10000, coefficient=-1.020533, group='Climate'),
+        ModelVariable(BenefitSpatialVariable.SLOPE, ihs=True, buffer=10000, coefficient=0.9725203, group='Landscape')
     ]
 
     QUADRATICS = [

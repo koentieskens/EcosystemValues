@@ -21,6 +21,7 @@ class ModelVariable:
     cons_surplus: float = 0
     exchange_value: float = 0
     global_layer: GlobalVectorLayer = None
+    group: Optional[str] = None
 
 
     @property
