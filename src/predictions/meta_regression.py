@@ -126,7 +126,7 @@ class Predict:
             main_days:int =10) -> Optional[float]:
         """Predict ecosystem service value using regression equation"""
         try:
-            area_hectares = Predict.area_limiter(area_hectares)
+            area_hectares = Predict.area_limiter(area_hectares, 30)
             for var in model_class.INPUT_VARIABLES:
                 if var.name == 'Latitude':
                     var.value = abs(latitude)
