@@ -176,12 +176,20 @@ class CalculationEngine:
                     conversion_factor = CurrencyConverter.convert_usd_year(1, country, 2020, 2024)
                     cost_layers = [var_obj.variable for var_obj in model_class.COST_MODEL.GLOBAL_LAYERS if var_obj.value]
                     cost_per_ha = St_Utils.extract_global_layers(cost_layers, **ssm.PROJECT_LOCATION.get())
-                    converted_costs = [{k: v * conversion_factor for k, v in d.items()} for d in cost_per_ha]
+                    try:
+                        converted_costs = [{k: v * conversion_factor for k, v in d.items()} for d in cost_per_ha]
+                    except TypeError:
+                        #TODO this needs ot be handled at the root and explained to the user that there is no dat for EU and US
+                        st.warning('No forest restoration data available for this area')
+                        return None
 
                     # AV = PV * r/(1-(1+r)^(-1*years)) (from email from Luke Brander
                     #convert to annual values from present values
                     def annualize(pv, r, years):
-                        av = pv * r / (1 - (1 + r)**(-1 * years))
+                        try:
+                            av = pv * r / (1 - (1 + r)**(-1 * years))
+                        except TypeError:
+                            av = 0
 
                         return av
                     annualized_costs = [{k: annualize(v, 0.05, 30) for k, v in d.items()} for d in converted_costs]
