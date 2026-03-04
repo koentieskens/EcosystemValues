@@ -178,7 +178,9 @@ class EcoApp:
 
                 st.markdown("""Select which intervention you want to include in the cost assessment.""")
                 self.ui.cost_variables_menu()
-                cost_per_ha = self.calculator.calculate_costs()
+                cost_per_ha = None
+                if st.button("Calculate Costs", type="primary", use_container_width=True):
+                    cost_per_ha = self.calculator.calculate_costs()
 
             with col2:
                 st.subheader("Cost Estimates")

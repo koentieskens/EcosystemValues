@@ -70,3 +70,10 @@ class NBS:
         description='Involves the protection of springs, rivers, and lakes from pollution, high water flows(floods), or over-abstraction of water, as well as protection measures against damage from waterbodies (e.g. river bank erosion, floods, tidal erosion).',
         data_source='Original met-analytic value function using SLM cost data from Reynolds et al., 2024, https://wocat.net/documents/1122/WOCAT_Methodological_Paper_Final_Draft.pdf'
     )
+
+    NBS_33 = NBSData(
+        name='Forest and wetland management',
+        full_name='Forest and wetland management',
+        description='Involves the protection of forests and wetlands.',
+        data_source='Original met-analytic value function using SLM cost data from Reynolds et al., 2024, https://wocat.net/documents/1122/WOCAT_Methodological_Paper_Final_Draft.pdf'
+    )

@@ -163,70 +163,69 @@ class CalculationEngine:
             - None if no applicable cost model is found or if the button is not pressed.
         """
         model_class = ssm.MODEL_CLASS.get()
-        if st.button("Calculate Costs", type="primary", use_container_width=True):
 
-            try:
-                lat = ssm.PROJECT_LOCATION.get()['lat']
-                lon = ssm.PROJECT_LOCATION.get()['lon']
-                locations = reverse_geocode.get((lat, lon))['country_code']
-                country = countries.get(locations).alpha3
 
-                if hasattr(model_class.COST_MODEL, 'GLOBAL_LAYERS'):
-                    # Bush et al values are in 2020 USD
-                    conversion_factor = CurrencyConverter.convert_usd_year(1, country, 2020, 2024)
-                    cost_layers = [var_obj.variable for var_obj in model_class.COST_MODEL.GLOBAL_LAYERS if var_obj.value]
-                    cost_per_ha = St_Utils.extract_global_layers(cost_layers, **ssm.PROJECT_LOCATION.get())
-                    try:
-                        converted_costs = [{k: v * conversion_factor for k, v in d.items()} for d in cost_per_ha]
-                    except TypeError:
-                        #TODO this needs ot be handled at the root and explained to the user that there is no dat for EU and US
-                        st.warning('No forest restoration data available for this area')
-                        return None
+        try:
+            lat = ssm.PROJECT_LOCATION.get()['lat']
+            lon = ssm.PROJECT_LOCATION.get()['lon']
+            locations = reverse_geocode.get((lat, lon))['country_code']
+            country = countries.get(locations).alpha3
 
-                    # AV = PV * r/(1-(1+r)^(-1*years)) (from email from Luke Brander
-                    #convert to annual values from present values
-                    def annualize(pv, r, years):
-                        try:
-                            av = pv * r / (1 - (1 + r)**(-1 * years))
-                        except TypeError:
-                            av = 0
-
-                        return av
-                    annualized_costs = [{k: annualize(v, 0.05, 30) for k, v in d.items()} for d in converted_costs]
-
-                    annualized_lookup = {k: v for cost_dict in annualized_costs for k, v in cost_dict.items()}
-
-                    # Update cost_layers items
-                    for var_obj in model_class.COST_MODEL.GLOBAL_LAYERS:
-                        if var_obj.variable.full_name in annualized_lookup:
-                            var_obj.cost_value = annualized_lookup[var_obj.variable.full_name]
-
-                    return annualized_costs
-
-                elif hasattr(model_class.COST_MODEL, 'NBS'):
-                    if not ssm.COST_EXTRACTION_DONE.get():
-                        st.warning('Please extract cost spatial variables first in menu above')
-                        return None
-                    predicted_values = {}
-                    nbss = [nbs for nbs in model_class.COST_MODEL.NBS if nbs.value]
-                    # Cost values are in 2021 int $
-                    conversion_factor = self.convert_to_usd(1, country, from_year=2021)
-
-                    area = ssm.PROJECT_LOCATION.get()['area']
-                    lat = ssm.PROJECT_LOCATION.get()['lat']
-                    predicted_value = Predict.predict_cost(model_class.COST_MODEL, nbss, area, lat)
-                    converted_value = predicted_value * conversion_factor
-                    predicted_values['NBS Total Cost'] = converted_value
-
-                    st.success("Calculation Complete!")
-                    result = [{key: float(value)} for key, value in predicted_values.items()]
-                    for nbs in nbss:
-                        nbs.cost_value = converted_value
-                    return result
-
-                else:
+            if hasattr(model_class.COST_MODEL, 'GLOBAL_LAYERS'):
+                # Bush et al values are in 2020 USD
+                conversion_factor = CurrencyConverter.convert_usd_year(1, country, 2020, 2024)
+                cost_layers = [var_obj.variable for var_obj in model_class.COST_MODEL.GLOBAL_LAYERS if var_obj.value]
+                cost_per_ha = St_Utils.extract_global_layers(cost_layers, **ssm.PROJECT_LOCATION.get())
+                try:
+                    converted_costs = [{k: v * conversion_factor for k, v in d.items()} for d in cost_per_ha]
+                except TypeError:
+                    #TODO this needs ot be handled at the root and explained to the user that there is no dat for EU and US
+                    st.warning('No forest restoration data available for this area')
                     return None
-            except Exception as e:
-                st.error(f"Error calculating costs: {e}")
-        else:
-            return None
+
+                # AV = PV * r/(1-(1+r)^(-1*years)) (from email from Luke Brander
+                #convert to annual values from present values
+                def annualize(pv, r, years):
+                    try:
+                        av = pv * r / (1 - (1 + r)**(-1 * years))
+                    except TypeError:
+                        av = 0
+
+                    return av
+                annualized_costs = [{k: annualize(v, 0.05, 30) for k, v in d.items()} for d in converted_costs]
+
+                annualized_lookup = {k: v for cost_dict in annualized_costs for k, v in cost_dict.items()}
+
+                # Update cost_layers items
+                for var_obj in model_class.COST_MODEL.GLOBAL_LAYERS:
+                    if var_obj.variable.full_name in annualized_lookup:
+                        var_obj.cost_value = annualized_lookup[var_obj.variable.full_name]
+
+                return annualized_costs
+
+            elif hasattr(model_class.COST_MODEL, 'NBS'):
+                if not ssm.COST_EXTRACTION_DONE.get():
+                    st.warning('Please extract cost spatial variables first in menu above')
+                    return None
+                predicted_values = {}
+                nbss = [nbs for nbs in model_class.COST_MODEL.NBS if nbs.value]
+                # Cost values are in 2021 int $
+                conversion_factor = self.convert_to_usd(1, country, from_year=2021)
+
+                area = ssm.PROJECT_LOCATION.get()['area']
+                lat = ssm.PROJECT_LOCATION.get()['lat']
+                for nbs in nbss:
+                    predicted_value = Predict.predict_cost(model_class.COST_MODEL, nbs, area, lat)
+                    converted_value = predicted_value * conversion_factor
+                    predicted_values[nbs.variable.name] = converted_value
+                    nbs.cost_value = converted_value
+
+                st.success("Calculation Complete!")
+                result = [{key: float(value)} for key, value in predicted_values.items()]
+
+                return result
+
+            else:
+                return None
+        except Exception as e:
+            st.error(f"Error calculating costs: {e}")

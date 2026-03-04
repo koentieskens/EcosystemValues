@@ -50,6 +50,7 @@ class IntensiveLandUseCost:
         ModelVariable(NBS.NBS_30, coefficient=0.6927834),
         ModelVariable(NBS.NBS_31, coefficient=0.626235),
         ModelVariable(NBS.NBS_32, coefficient=0.2069697),
+        ModelVariable(NBS.NBS_33, coefficient=0.00),
     ]
 
     @classmethod

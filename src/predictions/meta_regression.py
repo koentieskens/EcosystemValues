@@ -119,7 +119,7 @@ class Predict:
     @staticmethod
     def predict_cost(
             model_class: Union[IntensiveLandUseCost],
-            nbss: list[ModelVariable],
+            nbs: ModelVariable,
             area_hectares: float,
             latitude: float,
             est_days:int =12, # 123 and 10 are median values of all cases with value != 1
@@ -164,12 +164,12 @@ class Predict:
                 eq += f"+ {est}, {var_obj.name}:{var_obj.value:.2f}"
 
             # add nbs
-            for nbs in nbss:
-                value = 1
-                coefficient = nbs.coefficient
-                est = coefficient * value
-                regression_sum += est
-                eq += f"+ {est}"
+
+            value = 1
+            coefficient = nbs.coefficient
+            est = coefficient * value
+            regression_sum += est
+            eq += f"+ {est}"
 
             # add interactions
             if model_class.QUADRATICS:
