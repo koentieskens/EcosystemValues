@@ -167,7 +167,7 @@ class EcoApp:
                 st.info("Activate a project location to unlock this section.")
                 return
 
-            needs_extraction = ssm.ECOSYSTEM_TYPE.get() in ('intensive_land_use', 'grassland')
+            needs_extraction = ssm.ECOSYSTEM_TYPE.get() in ('intensive_land_use')
             if needs_extraction and not ssm.COST_EXTRACTION_DONE.get():
                 st.info("Extract spatial variables (Cost tab) to unlock this section.")
                 return
@@ -179,8 +179,9 @@ class EcoApp:
                 st.markdown("""Select which intervention you want to include in the cost assessment.""")
                 self.ui.cost_variables_menu()
                 cost_per_ha = None
-                if st.button("Calculate Costs", type="primary", use_container_width=True):
-                    cost_per_ha = self.calculator.calculate_costs()
+                if ssm.MODEL_CLASS.get().COST_MODEL is not None:
+                    if st.button("Calculate Costs", type="primary", use_container_width=True):
+                        cost_per_ha = self.calculator.calculate_costs()
 
             with col2:
                 st.subheader("Cost Estimates")

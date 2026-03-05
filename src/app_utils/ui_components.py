@@ -370,6 +370,8 @@ class UIRenderer:
                             key=f"cost_{var_key}_{ssm.ECOSYSTEM_TYPE.get()}",
                             help=pvar_obj.variable.description
                         )
+            elif ssm.MODEL_CLASS.get().COST_MODEL is None:
+                st.info("Cost model for this biome is unavailable")
             else:
                 st.info("Please select a biome first")
 
