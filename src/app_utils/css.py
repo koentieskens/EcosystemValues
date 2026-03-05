@@ -117,6 +117,37 @@ class CSS:
 
                 </style>
                 """
+    LOADING_SCREEN = """
+<style>
+#loading-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: #f8f9fa;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: sans-serif;
+}
+.loading-spinner {
+    width: 52px; height: 52px;
+    border: 5px solid #e0e0e0;
+    border-top-color: #006d77;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+    margin-bottom: 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: #555; font-size: 1.1rem; font-weight: 500; }
+</style>
+<div id="loading-screen">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading…</p>
+</div>
+"""
+
     BIOME_SELECTION_BOX = """
         <style>
         .biome-box {

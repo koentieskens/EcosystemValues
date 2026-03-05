@@ -22,6 +22,7 @@ class ModelVariable:
     exchange_value: float = 0
     global_layer: GlobalVectorLayer = None
     group: Optional[str] = None
+    benefit_type: Optional[str] = None
 
 
     @property

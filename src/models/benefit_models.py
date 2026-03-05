@@ -1,8 +1,8 @@
 from src.variables.spatial_variable import BenefitSpatialVariable, ClimateSpatialVariable, CountrySpatialVariable
 from src.variables.variables import ModelVariable
-from ..variables.land_cover import LandCoverGroup
-from ..variables.ecosystem_service import EcosystemService
-from ..variables.global_layers import GlobalLayer, GlobalVectorLayer
+from src.variables.land_cover import LandCoverGroup
+from src.variables.ecosystem_service import EcosystemService
+from src.variables.global_layers import GlobalLayer, GlobalVectorLayer
 from src.variables.sub_biome import SubBiome
 from src.variables.value_type import ValueType
 from src.models import cost_models
@@ -55,10 +55,10 @@ class TropicalForest:
     ]
 
     SIIKAMAKI = [
-        ModelVariable(GlobalLayer.FOREST_HABITAT_VALUE),
-        ModelVariable(GlobalLayer.FOREST_NONWOOD_PRODUCTS_VALUE),
-        ModelVariable(GlobalLayer.FOREST_RECREATION_VALUE),
-        ModelVariable(GlobalLayer.FOREST_WATER_SERVICE_VALUE)
+        ModelVariable(GlobalLayer.FOREST_HABITAT_VALUE, benefit_type='Cons_Surplus'),
+        ModelVariable(GlobalLayer.FOREST_NONWOOD_PRODUCTS_VALUE, benefit_type='Exchange_Value'),
+        ModelVariable(GlobalLayer.FOREST_RECREATION_VALUE, benefit_type='Exchange_Value'),
+        ModelVariable(GlobalLayer.FOREST_WATER_SERVICE_VALUE, benefit_type='Exchange_Value')
     ]
 
     COST_MODEL = cost_models.BUSCH
@@ -120,10 +120,10 @@ class TemparateForest:
     ]
 
     SIIKAMAKI = [
-        ModelVariable(GlobalLayer.FOREST_HABITAT_VALUE),
-        ModelVariable(GlobalLayer.FOREST_NONWOOD_PRODUCTS_VALUE),
-        ModelVariable(GlobalLayer.FOREST_RECREATION_VALUE),
-        ModelVariable(GlobalLayer.FOREST_WATER_SERVICE_VALUE)
+        ModelVariable(GlobalLayer.FOREST_HABITAT_VALUE, benefit_type=ValueType.CONS_SURPLUS.full_name),
+        ModelVariable(GlobalLayer.FOREST_NONWOOD_PRODUCTS_VALUE, benefit_type=ValueType.EXCHANGE_VALUE.full_name),
+        ModelVariable(GlobalLayer.FOREST_RECREATION_VALUE, benefit_type=ValueType.EXCHANGE_VALUE.full_name),
+        ModelVariable(GlobalLayer.FOREST_WATER_SERVICE_VALUE, benefit_type=ValueType.EXCHANGE_VALUE.full_name)
     ]
 
     COST_MODEL = cost_models.BUSCH

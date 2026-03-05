@@ -321,7 +321,13 @@ class UIRenderer:
         predicted_values = predicted_sets[benefit_type]
         if siikamaki_benefits is not None:
             for benefit in siikamaki_benefits:
-                predicted_values.update(benefit)
+                full_name = next(iter(benefit))
+                print(full_name)
+                siikamaki_list = ssm.MODEL_CLASS.get().SIIKAMAKI
+                item = next((item for item in siikamaki_list if item.variable.full_name == full_name), None)
+
+                if item.benefit_type == benefit_type:
+                    predicted_values.update(benefit)
 
         rows = [{"Ecosystem Service": k, "Value (USD/ha/yr)": v} for k, v in predicted_values.items()]
         total_value = sum(predicted_values.values())

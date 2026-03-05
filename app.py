@@ -5,6 +5,8 @@ from src.app_utils.locations_components import LocationManager
 from src.app_utils.gcp_authenticate import ConnectToGoogle
 from src.app_utils.ui_components import UIRenderer
 from src.app_utils.session_states import SessionStateManager as ssm
+from src.app_utils.image_render import ImageRenderer
+from src.variables.partners import Partner
 
 
 @st.cache_resource
@@ -44,27 +46,8 @@ class EcoApp:
             col1, col2 = st.columns([2, 1])
             with col1:
                 st.title("NBS Valuation Tool")
-
             with col2:
-                img_base64 = self.ui.get_base64_image("src/images/NBS_GFDRR_Admin_WBG_2.avif")
-                st.markdown("""
-                    <style>
-                    .bottom-align {
-                        display: flex;
-                        align-items: flex-end;
-                        height: 100%;
-                    }
-                    </style>
-                    """, unsafe_allow_html=True)
-
-                st.markdown('<div class="bottom-align">', unsafe_allow_html=True)
-                st.markdown(f"""
-                    <a href="https://www.naturebasedsolutions.org/" target="_blank">
-                        <img src="data:image/avif;base64,{img_base64}" width="1000" alt="Logo">
-                    </a>
-                    """, unsafe_allow_html=True)
-
-                st.markdown('</div>', unsafe_allow_html=True)
+                ImageRenderer.tight_image(Partner.US)
 
     def set_css(self):
         st.markdown(f"<style>{CSS.WELCOME}</style>", unsafe_allow_html=True)
@@ -194,6 +177,23 @@ class EcoApp:
                 if ssm.DISPLAYED_COST.get():
                     self.ui.display_costs(ssm.COST_DATA.get())
 
+    def partner_banner(self):
+        all_partners = [
+            Partner.PROGREEN,
+            Partner.FSD,
+            Partner.UNIQUE,
+            Partner.IUCN,
+            Partner.ECU,
+            Partner.ELD,
+            Partner.GPS,
+            Partner.NBSINVEST,
+            Partner.DUKE,
+            Partner.UCSC,
+            Partner.FAO
+            ]
+        ImageRenderer.partner_banner_scroll_working(all_partners)
+
+
 
 def main():
     st.set_page_config(
@@ -201,6 +201,14 @@ def main():
         page_icon="🌱",
         layout="wide"
     )
+
+    if not st.session_state.get('init_done', False):
+        st.markdown(CSS.LOADING_SCREEN, unsafe_allow_html=True)
+        app = EcoApp()
+        app.set_css()
+        app.initialize()
+        st.rerun()
+        return
 
     app = EcoApp()
     app.set_css()
@@ -210,6 +218,7 @@ def main():
     app.location()
     app.benefits()
     app.costs()
+    app.partner_banner()
 
 
 
