@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from src.models.benefit_models import IntensiveLandUse, Grassland, TropicalForest, TemparateForest
-from src.models.cost_models import IntensiveLandUseCost
+from src.models.cost_models import IntensiveLandUseCost, MangroveCost
 from src.variables.variables import ModelVariable
 from src.app_utils.utils import CurrencyConverter
 
@@ -116,15 +116,65 @@ class Predict:
     def area_limiter(area_hectares: float, limit: float=1000) -> float:
         return min(area_hectares, limit)
 
+
+    @staticmethod
+    def predict_mangrove_cost(
+            model_class: MangroveCost,
+            nbs: ModelVariable,
+            area_hectares: float,
+            cost_years: int=1
+    ):
+        try:
+            for var in model_class.INPUT_VARIABLES:
+                if var.name == 'Cost_Years':
+                    var.value = cost_years
+
+            intercept = model_class.CONSTANTS.get('Intercept')
+            area_ln_coef = model_class.CONSTANTS.get('Area_ha_ln')
+
+            regression_sum = intercept
+            est = Predict.log_p1(area_hectares) * area_ln_coef
+            regression_sum += est
+
+            variables = model_class.INPUT_VARIABLES + model_class.VARIABLES
+            for var_obj in variables:
+
+                if hasattr(var_obj, 'ln') and var_obj.ln:
+                    value = Predict.log_p1(var_obj.value)
+                else:
+                    value = var_obj.value
+
+                est = var_obj.coefficient * value
+                print(est)
+                regression_sum += est
+            preliminary_cost = math.exp(regression_sum)
+
+            value = 1
+            coefficient = nbs.coefficient
+            est = coefficient * value
+            regression_sum += est
+            cost_now = math.exp(regression_sum)
+
+            if coefficient > 0:
+                cost_now = cost_now - preliminary_cost
+
+            return cost_now
+        except Exception as e:
+            raise e
+
     @staticmethod
     def predict_cost(
-            model_class: Union[IntensiveLandUseCost],
+            model_class: Union[IntensiveLandUseCost, MangroveCost],
             nbs: ModelVariable,
             area_hectares: float,
             latitude: float,
             est_days:int =12, # 123 and 10 are median values of all cases with value != 1
             main_days:int =10) -> Optional[float]:
         """Predict ecosystem service value using regression equation"""
+
+        if model_class.__name__ == 'MangroveCost':
+            return Predict.predict_mangrove_cost(model_class, nbs, area_hectares)
+
         try:
             area_hectares = Predict.area_limiter(area_hectares, 30)
             for var in model_class.INPUT_VARIABLES:

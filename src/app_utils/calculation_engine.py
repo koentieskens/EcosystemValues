@@ -5,7 +5,7 @@ from src.app_utils.session_states import SessionStateManager as ssm
 from src.app_utils.utils import CurrencyConverter
 import reverse_geocode
 import math
-
+import numpy as np
 from iso3166 import countries
 
 class CalculationEngine:
@@ -33,6 +33,10 @@ class CalculationEngine:
                     vt.value = 1.0
                     predicted_values = {}
                     ess = [es for es in model_class.ECOSYSTEM_SERVICES if es.value and es.global_layer is None]
+                    if vt.variable.name == 'Cons_Surplus':
+                        ess = [es for es in ess if es.variable.welfare]
+                    if vt.variable.name == 'Exchange_Value':
+                        ess = [es for es in ess if es.variable.exchange]
 
                     for es in ess:
                         predicted_value = Predict.predict_benefit(model_class, es, vt, ssm.PROJECT_LOCATION.get()['area'])
@@ -40,25 +44,26 @@ class CalculationEngine:
                         predicted_values[es.variable.name] = converted_value
                         if vt.variable.name == 'Cons_Surplus':
                             es.cons_surplus = converted_value
+
                         if vt.variable.name == 'Exchange_Value':
                             es.exchange_value = converted_value
+                    if vt.variable.name == 'Exchange_Value':
+                        ess = [es for es in model_class.ECOSYSTEM_SERVICES if es.value and es.global_layer is not None]
+                        if len(ess) > 0:
+                            conversion_factor = CurrencyConverter.convert_usd_year(1, country, 2020, 2024)
+                            for es in ess:
+                                val = St_Utils.extract_value_from_gpkg(es.global_layer, lat, lon)
+                                converted_value = val * conversion_factor
+                                #making sure it returns 0 if Menendez returns nan
+                                if not isinstance(converted_value, (int, float)) or math.isnan(converted_value):
+                                    converted_value = 0
 
-                    ess = [es for es in model_class.ECOSYSTEM_SERVICES if es.value and es.global_layer is not None]
-                    if len(ess) > 0:
-                        conversion_factor = CurrencyConverter.convert_usd_year(1, country, 2020, 2024)
-                        for es in ess:
-                            val = St_Utils.extract_value_from_gpkg(es.global_layer, lat, lon)
-                            converted_value = val * conversion_factor
-                            #making sure it returns 0 if Menendez returns nan
-                            if not isinstance(converted_value, (int, float)) or math.isnan(converted_value):
-                                converted_value = 0
-
-                            if vt.variable.name == 'Cons_Surplus':
-                                es.cons_surplus = 0
-                                predicted_values[es.variable.name] = 0
-                            if vt.variable.name == 'Exchange_Value':
-                                es.exchange_value = converted_value
-                                predicted_values[es.variable.name] = converted_value
+                                if vt.variable.name == 'Cons_Surplus':
+                                    es.cons_surplus = np.nan
+                                    predicted_values[es.variable.name] = np.nan
+                                if vt.variable.name == 'Exchange_Value':
+                                    es.exchange_value = converted_value
+                                    predicted_values[es.variable.name] = converted_value
 
                     prediction_sets[vt.variable.full_name] = predicted_values
 
@@ -210,7 +215,10 @@ class CalculationEngine:
                 predicted_values = {}
                 nbss = [nbs for nbs in model_class.COST_MODEL.NBS if nbs.value]
                 # Cost values are in 2021 int $
-                conversion_factor = self.convert_to_usd(1, country, from_year=2021)
+                if model_class.COST_MODEL.__name__ == 'MangroveCost':
+                    conversion_factor = CurrencyConverter.convert_usd_year(1, country, 2020, 2024)
+                else:
+                    conversion_factor = self.convert_to_usd(1, country, from_year=2021)
 
                 area = ssm.PROJECT_LOCATION.get()['area']
                 lat = ssm.PROJECT_LOCATION.get()['lat']

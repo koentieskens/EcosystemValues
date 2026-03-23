@@ -401,10 +401,14 @@ class UIRenderer:
             def bold_last_row(row):
                 return ["font-weight: bold" if row.name == len(df) - 1 else "" for _ in row]
 
+            def increase_font_size(row):
+                return [f"font-size: 32px" for _ in row]  # Adjust size as needed
+
             styled = (
                 df.style
                 .format({"Cost (USD/ha/yr)": lambda v: f"${v:,.2f}" if v is not None else "No data available"})
                 .apply(bold_last_row, axis=1)
+                .apply(increase_font_size, axis=1)
             )
             st.dataframe(styled, width='stretch', hide_index=True)
 
@@ -551,16 +555,16 @@ class Sidebar:
         has_calculations = ssm.BENEFITS_UPDATED.get()
 
         if has_location and has_variables and has_calculations:
-            if st.button("Download CSV",
+            if st.button("Generate CSV",
                          use_container_width=True,
                          type="primary"):
                 csv_data = self._generate_csv_data()
 
                 # Create download
                 st.download_button(
-                    label="⬇️ Download Results.csv",
+                    label="⬇️ Download output CSV",
                     data=csv_data,
-                    file_name=f"ecosystem_benefits_{ssm.ECOSYSTEM_TYPE.get()}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.csv",
+                    file_name=f"BIOME_OUTPUT_{ssm.SAVED_COUNTRY.get().replace(' ', '_')}_{ssm.ECOSYSTEM_TYPE.get()}_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
                     mime='text/csv',
                     use_container_width=True
                 )
@@ -697,7 +701,7 @@ class Sidebar:
             variables = ssm.MODEL_CLASS.get().ECOSYSTEM_SERVICES
             for var_obj in variables:
                 data_rows.append({
-                    'Category': 'Benefit - Consumer Surplus',
+                    'Category': 'Benefit - Welfare Value',
                     'Variable': var_obj.name,
                     'Description': var_obj.description,
                     'Value': var_obj.cons_surplus,
@@ -708,7 +712,7 @@ class Sidebar:
             variables = ssm.MODEL_CLASS.get().SIIKAMAKI
             for var_obj in variables:
                 data_rows.append({
-                    'Category': 'Benefit - Consumer Surplus',
+                    'Category': 'Benefit - Welfare Value',
                     'Variable': var_obj.variable.full_name,
                     'Description': var_obj.variable.description,
                     'Value': var_obj.cons_surplus,
@@ -751,29 +755,17 @@ class Sidebar:
                             'Source': layer.variable.source
                         })
             if hasattr(ssm.MODEL_CLASS.get().COST_MODEL, 'NBS'):
-                source = None
-                value = None
                 for layer in ssm.MODEL_CLASS.get().COST_MODEL.NBS:
-
                     if layer.value:
                         data_rows.append({
                             'Category': 'Costs',
                             'Variable': layer.variable.full_name,
                             'Description': layer.variable.description,
                             'Unit': 'USD per hectare per year',
+                            'Value': layer.cost_value,
                             'Source': layer.variable.data_source,
                         })
-                        source = layer.variable.data_source
-                        value = layer.cost_value
 
-                data_rows.append({
-                    'Category': 'Costs',
-                    'Variable': 'Total Cost',
-                    'Description': 'Total cost for the selected NBS techniques',
-                    'Unit': 'USD per hectare per year',
-                    'Source': source,
-                    'Value': value
-                })
         # Create DataFrame and convert to CSV
         df = pd.DataFrame(data_rows)
 

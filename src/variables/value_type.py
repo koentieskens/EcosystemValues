@@ -27,5 +27,5 @@ class ValueType:
 
     CONS_SURPLUS = ValueTypeData(
         name='Cons_Surplus',
-        full_name='Consumer surplus',
+        full_name='Welfare Value',
         description='The difference between the total economic value of a service and its direct utility, reflecting the potential benefits of the service to consumers')

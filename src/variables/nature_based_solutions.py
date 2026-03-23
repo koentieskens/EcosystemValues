@@ -77,3 +77,17 @@ class NBS:
         description='Involves the protection of forests and wetlands.',
         data_source='Original met-analytic value function using SLM cost data from Reynolds et al., 2024, https://wocat.net/documents/1122/WOCAT_Methodological_Paper_Final_Draft.pdf'
     )
+
+    HYDROLOGICAL_MANGROVE_RESTORATION = NBSData(
+        name='Hydrological mangrove restoration',
+        full_name='Hydrological mangrove restoration',
+        description='Hydrological mangrove restoration is the process of restoring natural tidal flows, freshwater input, and drainage to degraded areas, enabling natural regeneration rather than relying on intensive planting..',
+        data_source='https://esajournals.onlinelibrary.wiley.com/doi/10.1890/15-1077'
+    )
+
+    PLANTING_MANGROVES = NBSData(
+        name='Planting mangroves',
+        full_name='Planting mangrove saplings, small trees and seeds',
+        description='Planting mangroves is the process of planting mangrove trees and seedlings or propagules in degraded areas.',
+        data_source='https://esajournals.onlinelibrary.wiley.com/doi/10.1890/15-1077'
+    )

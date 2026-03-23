@@ -229,7 +229,7 @@ class Mangroves:
 
     INTERACTIONS = []
 
-    COST_MODEL = None
+    COST_MODEL = cost_models.MangroveCost
 
     GLOBAL_LAYERS = [
         GlobalLayer.RESTORATION_OPPORTUNITY_COST,
@@ -279,7 +279,9 @@ class Grassland:
     SUB_BIOMES = []
 
     INTERACTIONS = []
+
     COST_MODEL = None
+
     GLOBAL_LAYERS = [
         GlobalLayer.RESTORATION_OPPORTUNITY_COST,
         GlobalLayer.EXOTIC_IMPLEMENTATION_COST,

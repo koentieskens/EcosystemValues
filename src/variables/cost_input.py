@@ -25,3 +25,9 @@ class CostInput:
         full_name='Latitude',
         description='Latitude of the location of the NBS'
     )
+
+    COST_YEARS = CostInputData(
+        name='Cost_Years',
+        full_name='Cost years',
+        description='Cost years are the number of years needed to establish the NBS'
+    )
