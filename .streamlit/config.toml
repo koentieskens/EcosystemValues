@@ -1,6 +1,6 @@
 [theme]
-primaryColor = "#006d77"        # Muted teal accent
-backgroundColor = "#f8f9fa"     # Soft off-white background
+primaryColor = "#006C99"        # Muted teal accent
+backgroundColor = "#F3F2EF"     # Soft off-white background
 secondaryBackgroundColor = "#ffffff"
 textColor = "#1c1c1c"           # Dark text for readability
 font = "sans serif"             # Options: "sans serif", "serif", "monospace"

@@ -100,7 +100,7 @@ class ImageRenderer:
                 justify-content: center;
                 transition: transform 0.3s ease;
             }}
-            .partner-logo-item:hover {{ transform: scale(1.15); }}
+            .partner-logo-item:hover {{ transform: scale(1.05); }}
             .partner-logo-item img {{
                 height: clamp({img_min}px, {img_vw}vw, {logo_height}px);
                 width: auto;

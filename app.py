@@ -29,7 +29,7 @@ class EcoApp:
         try:
             ssm.initialize_all()
             self.gcs = get_google_connection()
-            st.markdown(CSS.GOOGLE_FONT, unsafe_allow_html=True)
+            st.markdown(CSS.WORLD_BANK_STYLE_FONT, unsafe_allow_html=True)
 
             ssm.INIT_DONE.set(True)
         except Exception as e:
@@ -48,6 +48,7 @@ class EcoApp:
                 st.title("NBS Valuation Tool")
             with col2:
                 ImageRenderer.tight_image(Partner.US)
+            st.markdown(" ")
 
     def set_css(self):
         st.markdown(f"<style>{CSS.WELCOME}</style>", unsafe_allow_html=True)
@@ -56,6 +57,7 @@ class EcoApp:
         st.markdown(f"<style>{CSS.BENEFIT}</style>", unsafe_allow_html=True)
         st.markdown(f"<style>{CSS.COST}</style>", unsafe_allow_html=True)
         st.markdown(f"<style>{CSS.ESS}</style>", unsafe_allow_html=True)
+        st.markdown(f"<style>{CSS.PARTNERS}</style>", unsafe_allow_html=True)
         st.markdown(CSS.TAB_LAYOUT, unsafe_allow_html=True)
         st.markdown(CSS.HIDE_ANCHOR_CSS, unsafe_allow_html=True)
 
@@ -178,20 +180,21 @@ class EcoApp:
                     self.ui.display_costs(ssm.COST_DATA.get())
 
     def partner_banner(self):
-        all_partners = [
-            Partner.PROGREEN,
-            Partner.FSD,
-            Partner.UNIQUE,
-            Partner.IUCN,
-            Partner.ECU,
-            Partner.ELD,
-            Partner.GPS,
-            Partner.NBSINVEST,
-            Partner.DUKE,
-            Partner.UCSC,
-            Partner.FAO
-            ]
-        ImageRenderer.partner_banner_scroll_working(all_partners)
+        with st.container(key='partners'):
+            all_partners = [
+                Partner.PROGREEN,
+                Partner.FSD,
+                Partner.UNIQUE,
+                Partner.IUCN,
+                Partner.ECU,
+                Partner.ELD,
+                Partner.GPS,
+                Partner.NBSINVEST,
+                Partner.DUKE,
+                Partner.UCSC,
+                Partner.FAO
+                ]
+            ImageRenderer.partner_banner_scroll_working(all_partners)
 
 
 
