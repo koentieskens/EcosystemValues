@@ -471,6 +471,8 @@ class Sidebar:
             location = ssm.PROJECT_LOCATION.get()
             country = ssm.SAVED_COUNTRY.get()
             region = ssm.SAVED_REGION.get() or '-   '
+            country_code = ssm.SAVED_COUNTRY_CODE.get()
+            flag_html = f'<img src="https://flagcdn.com/20x15/{country_code.lower()}.png" style="vertical-align:middle; margin-right:4px;">' if country_code else ''
 
             # Get location name if available
             if ssm.POLYGON_CENTROID.get():
@@ -484,14 +486,15 @@ class Sidebar:
             biome = ssm.ECOSYSTEM_DISPLAY_NAME.get() or 'Not selected'
 
             # Display compact location info
-            st.markdown(f"""
-                    **Country:** {country}  
-                    **Region:** {region}  
-                    **Latitude:** {lat:.4f}  
-                    **Longitude:** {lon:.4f}  
-                    **Area:** {area:,.2f} ha  
-                    **Biome:** {biome}
-                    """)
+            st.markdown(
+                f"**Country:** {flag_html}{country}<br>"
+                f"**Region:** {region}<br>"
+                f"**Latitude:** {lat:.4f}<br>"
+                f"**Longitude:** {lon:.4f}<br>"
+                f"**Area:** {area:,.2f} ha<br>"
+                f"**Biome:** {biome}",
+                unsafe_allow_html=True
+            )
 
 
         else:

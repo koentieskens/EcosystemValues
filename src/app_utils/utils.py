@@ -88,7 +88,7 @@ class St_Utils:
         """Get county and country information from coordinates"""
         try:
             if lat == 0.0 and lon == 0.0:
-                return "", ""
+                return "", "", ""
 
             # Try original method
             try:
@@ -99,14 +99,13 @@ class St_Utils:
                 if country_code:
                     country_obj = countries.get(country_code)
                     country = country_obj.name if country_obj else country_code
-                    return county, country
+                    return county, country, country_code
             except:
                 pass
 
             # Fallback: find closest land point and try again
             # Move point towards nearest land (simple approach)
             search_radius = 0.5  # degrees
-            best_result = ("", "")
 
             for offset_lat in np.arange(-search_radius, search_radius, 0.1):
                 for offset_lon in np.arange(-search_radius, search_radius, 0.1):
@@ -120,15 +119,15 @@ class St_Utils:
                         if country_code:
                             country_obj = countries.get(country_code)
                             country = country_obj.name if country_obj else country_code
-                            return "", country  # Return closest found country
+                            return "", country, country_code
 
                     except:
                         continue
 
-            return "", ""
+            return "", "", ""
 
         except Exception as e:
-            return "", ""
+            return "", "", ""
 
     @staticmethod
     def get_geodesic_area(polygon: Polygon):

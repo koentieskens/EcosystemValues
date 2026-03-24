@@ -140,6 +140,7 @@ class SessionStateManager:
     COST_DATA = SessionStateVariable('cost_data', None)
     SAVED_COUNTRY = SessionStateVariable('saved_country', None)
     SAVED_REGION = SessionStateVariable('saved_region', None)
+    SAVED_COUNTRY_CODE = SessionStateVariable('saved_country_code', None)
 
     @classmethod
     def get_all_variables(cls):

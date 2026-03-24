@@ -161,10 +161,11 @@ class LocationManager:
             ssm.SAVED_POLYGON.set(ssm.UNSAVED_POLYGON.get())
             ssm.AOI_GDF.set(gpd.GeoDataFrame([1], geometry=[ssm.DRAWN_POLYGON.get()], crs='EPSG:4326'))
             ssm.ZOOM_LEVEL.set(self._zoom_from_area(ssm.POLYGON_AREA.get()))
-            county, country = St_Utils.get_location_info(ssm.PROJECT_LOCATION.get()['lat'],
+            county, country, country_code = St_Utils.get_location_info(ssm.PROJECT_LOCATION.get()['lat'],
                                                          ssm.PROJECT_LOCATION.get()['lon'])
             ssm.SAVED_COUNTRY.set(country)
             ssm.SAVED_REGION.set(county)
+            ssm.SAVED_COUNTRY_CODE.set(country_code)
             st.rerun()
         except TypeError:
             ssm.LOCATION_ACTIVATED.set(False)
@@ -187,10 +188,11 @@ class LocationManager:
             gdf = self.create_circle_gdf(ssm.MANUAL_CENTROID.get()[0], ssm.MANUAL_CENTROID.get()[1], ssm.MANUAL_AREA.get())[0]
             ssm.AOI_GDF.set(gdf)
             ssm.ZOOM_LEVEL.set(self._zoom_from_area(ssm.MANUAL_AREA.get()))
-            county, country = St_Utils.get_location_info(ssm.PROJECT_LOCATION.get()['lat'],
+            county, country, country_code = St_Utils.get_location_info(ssm.PROJECT_LOCATION.get()['lat'],
                                                          ssm.PROJECT_LOCATION.get()['lon'])
             ssm.SAVED_COUNTRY.set(country)
             ssm.SAVED_REGION.set(county)
+            ssm.SAVED_COUNTRY_CODE.set(country_code)
             st.rerun()
         except TypeError:
             ssm.LOCATION_ACTIVATED.set(False)
@@ -309,9 +311,10 @@ class LocationManager:
         # Get location information based on coordinates
         if ssm.LOCATION_ACTIVATED.get():
 
-            county, country = St_Utils.get_location_info(ssm.PROJECT_LOCATION.get()['lat'], ssm.PROJECT_LOCATION.get()['lon'])
+            county, country, country_code = St_Utils.get_location_info(ssm.PROJECT_LOCATION.get()['lat'], ssm.PROJECT_LOCATION.get()['lon'])
             ssm.SAVED_COUNTRY.set(country)
             ssm.SAVED_REGION.set(county)
+            ssm.SAVED_COUNTRY_CODE.set(country_code)
 
             # Display location information
             location_text = ""
