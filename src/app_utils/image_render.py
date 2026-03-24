@@ -71,8 +71,14 @@ class ImageRenderer:
         img_min = int(logo_height * 0.4)
         # vw value so logo reaches full height at ~1000px wide viewport
         img_vw = round(logo_height / 10, 1)
-        # iframe height: title (~50px) + up to 2 rows of logos + padding
-        iframe_height = logo_height * 2 + 120
+
+        # Calculate estimated number of rows based on number of logos
+        # Assume roughly 4-6 logos per row depending on viewport
+        estimated_logos_per_row = 5
+        estimated_rows = max(1, (len(partners_list) + estimated_logos_per_row - 1) // estimated_logos_per_row)
+
+        # iframe height: title (~50px) + estimated rows of logos + extra padding for safety
+        iframe_height = logo_height * estimated_rows + 120
 
         html = f"""
         <style>

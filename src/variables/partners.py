@@ -20,7 +20,7 @@ class Partner:
         name='Progreen',
         full_name='Progreen',
         url='https://www.progreen.info/',
-        logo='src/images/partners/progreen.jpg'
+        logo='src/images/partners/progreen.png'
     )
 
     FSD = PartnerData(
