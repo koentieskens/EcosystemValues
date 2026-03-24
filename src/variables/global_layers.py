@@ -41,7 +41,7 @@ class GlobalLayerData( variable_template.Data):
         return pd.DataFrame(data)
 
     def get_tooltip(self):
-        return f'{self.description}'
+        return f'{self.description}\n\nSource: {self.source}'
 
 
 class GlobalLayer:
@@ -185,7 +185,7 @@ class GlobalVectorLayerData( variable_template.Data):
         return pd.DataFrame(data)
 
     def get_tooltip(self):
-        return f'{self.description}'
+        return f'{self.description}\n\nSource: {self.source}'
 
 class GlobalVectorLayer:
 
