@@ -603,9 +603,9 @@ class Sidebar:
             st.markdown(
                 """
                 <a href="https://github.com/koentieskens/EcosystemValues" target="_blank"
-                   style="display:inline-flex; align-items:center; gap:8px; padding:8px 14px;
-                          background:#006d77; color:white; border-radius:6px;
-                          text-decoration:none; font-size:14px; margin-top:10px;">
+                   style="display:flex; justify-content:center; align-items:center; gap:8px; padding:8px 14px;
+                          background:#006C99; color:white; border-radius:6px;
+                          text-decoration:none; font-size:14px; margin-top:10px; width:100%; box-sizing:border-box;">
                     <svg height="18" width="18" viewBox="0 0 16 16" fill="white">
                       <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
                                0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
