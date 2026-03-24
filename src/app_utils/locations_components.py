@@ -107,6 +107,28 @@ class LocationManager:
 
         return gdf_circle, locations
 
+    @staticmethod
+    def _zoom_from_area(area_ha: float) -> int:
+        """Return a Folium zoom level that fits a polygon of the given area (hectares)."""
+        if area_ha <= 10:
+            return 15
+        elif area_ha <= 50:
+            return 14
+        elif area_ha <= 200:
+            return 13
+        elif area_ha <= 1_000:
+            return 12
+        elif area_ha <= 5_000:
+            return 11
+        elif area_ha <= 20_000:
+            return 10
+        elif area_ha <= 100_000:
+            return 9
+        elif area_ha <= 500_000:
+            return 8
+        else:
+            return 7
+
     def should_update_map(self):
         # Define what parameters affect the map
         current_state = {
@@ -138,7 +160,7 @@ class LocationManager:
             ssm.PROJECT_LOCATION.set({'lat': ssm.POLYGON_CENTROID.get()[0], 'lon': ssm.POLYGON_CENTROID.get()[1], 'area':ssm.POLYGON_AREA.get()})
             ssm.SAVED_POLYGON.set(ssm.UNSAVED_POLYGON.get())
             ssm.AOI_GDF.set(gpd.GeoDataFrame([1], geometry=[ssm.DRAWN_POLYGON.get()], crs='EPSG:4326'))
-            ssm.ZOOM_LEVEL.set(10)
+            ssm.ZOOM_LEVEL.set(self._zoom_from_area(ssm.POLYGON_AREA.get()))
             county, country = St_Utils.get_location_info(ssm.PROJECT_LOCATION.get()['lat'],
                                                          ssm.PROJECT_LOCATION.get()['lon'])
             ssm.SAVED_COUNTRY.set(country)
@@ -164,7 +186,7 @@ class LocationManager:
             ssm.SAVED_POLYGON.set(ssm.TEMP_MANUAL_POLYGON.get())
             gdf = self.create_circle_gdf(ssm.MANUAL_CENTROID.get()[0], ssm.MANUAL_CENTROID.get()[1], ssm.MANUAL_AREA.get())[0]
             ssm.AOI_GDF.set(gdf)
-            ssm.ZOOM_LEVEL.set(10)
+            ssm.ZOOM_LEVEL.set(self._zoom_from_area(ssm.MANUAL_AREA.get()))
             county, country = St_Utils.get_location_info(ssm.PROJECT_LOCATION.get()['lat'],
                                                          ssm.PROJECT_LOCATION.get()['lon'])
             ssm.SAVED_COUNTRY.set(country)
