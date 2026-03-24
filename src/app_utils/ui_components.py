@@ -444,7 +444,7 @@ class Sidebar:
 
     def title_and_about(self):
         """Title and about information section"""
-        st.title("NBS Valuation Tool")
+        st.title("BIOME")
 
         with st.expander("ℹ️ About this tool"):
             st.markdown("""

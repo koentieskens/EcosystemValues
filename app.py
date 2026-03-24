@@ -43,10 +43,13 @@ class EcoApp:
         with st.container(key='welcome'):
 
 
-            col1, col2 = st.columns([2, 1])
+            col1, col2 = st.columns([1, 1])
             with col1:
-                st.title("NBS Valuation Tool")
+                st.title("BIOME")
+                st.subheader("A platform for spatial cost–benefit analysis of nature and resilience investments")
             with col2:
+                st.markdown('')
+                st.markdown('')
                 ImageRenderer.tight_image(Partner.US)
             st.markdown(" ")
 
@@ -200,7 +203,7 @@ class EcoApp:
 
 def main():
     st.set_page_config(
-        page_title="Ecosystem Valuation Tool",
+        page_title="BIOME",
         page_icon="🌱",
         layout="wide"
     )

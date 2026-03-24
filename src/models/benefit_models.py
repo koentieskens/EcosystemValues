@@ -55,10 +55,10 @@ class TropicalForest:
     ]
 
     SIIKAMAKI = [
-        ModelVariable(GlobalLayer.FOREST_HABITAT_VALUE, benefit_type='Cons_Surplus'),
-        ModelVariable(GlobalLayer.FOREST_NONWOOD_PRODUCTS_VALUE, benefit_type='Exchange_Value'),
-        ModelVariable(GlobalLayer.FOREST_RECREATION_VALUE, benefit_type='Exchange_Value'),
-        ModelVariable(GlobalLayer.FOREST_WATER_SERVICE_VALUE, benefit_type='Exchange_Value')
+        ModelVariable(GlobalLayer.FOREST_HABITAT_VALUE, benefit_type=ValueType.CONS_SURPLUS.full_name),
+        ModelVariable(GlobalLayer.FOREST_NONWOOD_PRODUCTS_VALUE, benefit_type=ValueType.EXCHANGE_VALUE.full_name),
+        ModelVariable(GlobalLayer.FOREST_RECREATION_VALUE, benefit_type=ValueType.EXCHANGE_VALUE.full_name),
+        ModelVariable(GlobalLayer.FOREST_WATER_SERVICE_VALUE, benefit_type=ValueType.EXCHANGE_VALUE.full_name)
     ]
 
     COST_MODEL = cost_models.BUSCH
