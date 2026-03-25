@@ -46,11 +46,9 @@ class EcoApp:
             col1, col2 = st.columns([1, 1])
             with col1:
                 st.title("BIOME")
-                st.subheader("A platform for spatial cost–benefit analysis of nature and resilience investments")
             with col2:
-                st.markdown('')
-                st.markdown('')
-                ImageRenderer.tight_image(Partner.US)
+                ImageRenderer.two_logos_same_height(Partner.PROGREEN_FULL, Partner.US, height_px=100)
+            st.subheader("A platform for spatial cost–benefit analysis of nature and resilience investments")
             st.markdown(" ")
 
     def set_css(self):
@@ -187,7 +185,9 @@ class EcoApp:
     def partner_banner(self):
         with st.container(key='partners'):
             all_partners = [
+                Partner.GPNBS,
                 Partner.PROGREEN,
+                Partner.GFDRR,
                 Partner.FSD,
                 Partner.UNIQUE,
                 Partner.IUCN,

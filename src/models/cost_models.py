@@ -93,6 +93,6 @@ class MangroveCost:
     ]
 
     NBS = [
-        ModelVariable(NBS.HYDROLOGICAL_MANGROVE_RESTORATION, coefficient=0.00),
-        ModelVariable(NBS.PLANTING_MANGROVES, coefficient=1.274),
+        ModelVariable(NBS.PLANTING_MANGROVES, coefficient=0.00),
+        ModelVariable(NBS.HYDROLOGICAL_MANGROVE_RESTORATION, coefficient=1.274),
     ]

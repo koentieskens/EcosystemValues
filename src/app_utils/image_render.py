@@ -51,6 +51,29 @@ class ImageRenderer:
         st.markdown('</div>', unsafe_allow_html=True)
 
     @staticmethod
+    def two_logos_same_height(partner_left: Partner, partner_right: Partner, height_px: int = 80):
+        """Render two logos side by side at exactly the same pixel height."""
+        left_b64 = ImageRenderer.get_base64_image(partner_left.logo)
+        right_b64 = ImageRenderer.get_base64_image(partner_right.logo)
+        left_ext = partner_left.logo.split('.')[-1].lower()
+        right_ext = partner_right.logo.split('.')[-1].lower()
+
+        st.markdown(f"""
+            <div style="display:flex; align-items:flex-end; gap:24px; height:{height_px}px;">
+                <a href="{partner_left.url}" target="_blank">
+                    <img src="data:image/{left_ext};base64,{left_b64}"
+                         style="height:{height_px}px; width:auto; object-fit:contain; display:block;"
+                         alt="{partner_left.name}">
+                </a>
+                <a href="{partner_right.url}" target="_blank">
+                    <img src="data:image/{right_ext};base64,{right_b64}"
+                         style="height:{height_px}px; width:auto; object-fit:contain; display:block;"
+                         alt="{partner_right.name}">
+                </a>
+            </div>
+        """, unsafe_allow_html=True)
+
+    @staticmethod
     def partner_banner_scroll_working(partners_list, logo_height=80):
         """Banner rendered via st.components.v1.html() to avoid Streamlit size limits
         and column div interference. Logos scale fluidly with viewport width."""
