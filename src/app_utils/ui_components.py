@@ -433,7 +433,8 @@ class UIRenderer:
                   <tbody>{html_rows}</tbody>
                 </table>
             """, unsafe_allow_html=True)
-
+        cost_text = ssm.MODEL_CLASS.get().COST_MODEL.COST_TYPE
+        st.markdown(cost_text)
         ssm.COST_UPDATED.set(True)
 
     @staticmethod

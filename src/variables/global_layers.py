@@ -146,6 +146,18 @@ class GlobalLayer:
         bucket='nbs-tool-public'
     )
 
+    WB_ADMIN1_BOUNDARIES = GlobalLayerData(
+        name="WB_ADMIN1_BOUNDARIES",
+        full_name="Administrative boundaries",
+        description='Official ADMIN 1 World Bank Boundaries (last updated: June 17, 2025)',
+        gcs_path='data/global_data/admin/WorldBankOfficialBoundariesAdmin1.gpkg',
+        unit='n/a',
+        source='https://datacatalog.worldbank.org/search/dataset/0038272/world-bank-official-boundaries',
+        scale=1,
+        band=1,
+        bucket='nbs-tool-public'
+    )
+
 
 @dataclass
 class GlobalVectorLayerData( variable_template.Data):
@@ -197,5 +209,16 @@ class GlobalVectorLayer:
         unit='2020 USD',
         source='https://www.nature.com/articles/s41598-020-61136-6',
         layer='UCSC_CWON_studyunits',
+        bucket='nbs-tool-public'
+    )
+
+    WB_ADMIN1_BOUNDARIES = GlobalVectorLayerData(
+        name="WB_ADMIN1_BOUNDARIES",
+        full_name="Administrative boundaries",
+        description='Official ADMIN 1 World Bank Boundaries (last updated: June 17, 2025)',
+        gcs_path='data/global_data/admin/WorldBankOfficialBoundariesAdmin1.gpkg',
+        unit='n/a',
+        source='https://datacatalog.worldbank.org/search/dataset/0038272/world-bank-official-boundaries',
+        layer='WB_GAD_ADM1',
         bucket='nbs-tool-public'
     )

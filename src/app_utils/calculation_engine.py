@@ -188,7 +188,7 @@ class CalculationEngine:
                     st.warning('No forest restoration data available for this area')
                     return None
 
-                # AV = PV * r/(1-(1+r)^(-1*years)) (from email from Luke Brander
+                # AV = PV * r/(1-(1+r)^(-1*years)) (from email from Luke Brander)
                 #convert to annual values from present values
                 def annualize(pv, r, years):
                     try:

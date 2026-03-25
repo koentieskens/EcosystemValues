@@ -12,6 +12,7 @@ class BUSCH:
         ModelVariable(GlobalLayer.NATIVE_IMPLEMENTATION_COST),
         ModelVariable(GlobalLayer.REGENERATION_IMPLEMENTATION_COST)
     ]
+    COST_TYPE = 'Values represent annualized costs based on 30-year CAPEX and OPEX'
 
 
 class IntensiveLandUseCost:
@@ -52,6 +53,8 @@ class IntensiveLandUseCost:
         ModelVariable(NBS.NBS_32, coefficient=0.2069697),
         ModelVariable(NBS.NBS_33, coefficient=0.00),
     ]
+
+    COST_TYPE = 'Values represent annualized costs based on 10-year CAPEX and OPEX'
 
     @classmethod
     def update_quadratics_values(cls):
@@ -96,3 +99,5 @@ class MangroveCost:
         ModelVariable(NBS.PLANTING_MANGROVES, coefficient=0.00),
         ModelVariable(NBS.HYDROLOGICAL_MANGROVE_RESTORATION, coefficient=1.274),
     ]
+
+    COST_TYPE = 'Values represents total CAPEX and OPEX assuming 1-year restoration project'
