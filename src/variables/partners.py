@@ -23,6 +23,13 @@ class Partner:
         logo='src/images/partners/progreen.png'
     )
 
+    PROGREEN_FULL = PartnerData(
+        name='Progreen',
+        full_name='Progreen',
+        url='https://www.progreen.info/',
+        logo='src/images/partners/progreen_full.jpg'
+    )
+
     FSD = PartnerData(
         name='FSD',
         full_name='Foundation for Sustainable Development',

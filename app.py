@@ -177,6 +177,8 @@ class EcoApp:
                 if cost_per_ha:
                     ssm.DISPLAYED_COST.set(True)
                     ssm.COST_DATA.set(cost_per_ha)
+                    ssm.COST_UPDATED.set(True)
+                    st.rerun()
 
                 # Always display if we have costs data
                 if ssm.DISPLAYED_COST.get():

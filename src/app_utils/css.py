@@ -104,13 +104,36 @@ class CSS:
             /* Professional typography hierarchy */
             h1, h2, h3 {
                 font-weight: 600;
-                color: #002345; /* World Bank navy blue */
+                color: #002345;
             }
 
             .light-text {
                 font-weight: 300;
             }
 
+            /* Section header accent bar (main content h2 only) */
+            [data-testid="stMain"] h2 {
+                border-left: 4px solid #006C99;
+                padding-left: 12px;
+            }
+
+            /* Sidebar subheader styling */
+            [data-testid="stSidebar"] h3 {
+                font-size: 0.78rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: #6b7280;
+                margin-bottom: 8px;
+            }
+
+            /* Sidebar divider */
+            [data-testid="stSidebar"] hr {
+                border: none;
+                border-top: 1px solid #e5e7eb;
+                margin: 12px 0;
+            }
+        </style>
         """
 
     TAB_LAYOUT = """

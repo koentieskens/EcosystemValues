@@ -322,28 +322,39 @@ class UIRenderer:
         if siikamaki_benefits is not None:
             for benefit in siikamaki_benefits:
                 full_name = next(iter(benefit))
-                print(full_name)
                 siikamaki_list = ssm.MODEL_CLASS.get().SIIKAMAKI
                 item = next((item for item in siikamaki_list if item.variable.full_name == full_name), None)
 
                 if item.benefit_type == benefit_type:
                     predicted_values.update(benefit)
 
-        rows = [{"Ecosystem Service": k, "Value (USD/ha/yr)": v} for k, v in predicted_values.items()]
         total_value = sum(predicted_values.values())
-        rows.append({"Ecosystem Service": "Total", "Value (USD/ha/yr)": total_value})
-
-        df = pd.DataFrame(rows)
-
-        def bold_last_row(row):
-            return ["font-weight: bold" if row.name == len(df) - 1 else "" for _ in row]
-
-        styled = (
-            df.style
-            .format({"Value (USD/ha/yr)": "${:,.2f}"})
-            .apply(bold_last_row, axis=1)
+        html_rows = ""
+        for i, (name, val) in enumerate(predicted_values.items()):
+            bg = "#f9fafb" if i % 2 == 0 else "#ffffff"
+            html_rows += (
+                f'<tr style="background:{bg}">'
+                f'<td style="padding:9px 14px">{name}</td>'
+                f'<td style="padding:9px 14px; text-align:right">${val:,.2f}</td>'
+                f'</tr>'
+            )
+        html_rows += (
+            f'<tr style="background:#f0f4f8; font-weight:600">'
+            f'<td style="padding:9px 14px">Total</td>'
+            f'<td style="padding:9px 14px; text-align:right">${total_value:,.2f}</td>'
+            f'</tr>'
         )
-        st.dataframe(styled, width='stretch', hide_index=True)
+        st.markdown(f"""
+            <table style="width:100%; border-collapse:collapse; font-size:15px;">
+              <thead>
+                <tr style="background:#006C99; color:white;">
+                  <th style="padding:10px 14px; text-align:left; font-weight:600">Ecosystem Service</th>
+                  <th style="padding:10px 14px; text-align:right; font-weight:600">Value (USD/ha/yr)</th>
+                </tr>
+              </thead>
+              <tbody>{html_rows}</tbody>
+            </table>
+        """, unsafe_allow_html=True)
 
 
     def cost_variables_menu(self):
@@ -394,23 +405,34 @@ class UIRenderer:
 
         if rows:
             total_value = sum(r["Cost (USD/ha/yr)"] for r in rows if r["Cost (USD/ha/yr)"] is not None)
-            rows.append({"Intervention": "Total", "Cost (USD/ha/yr)": total_value})
-
-            df = pd.DataFrame(rows)
-
-            def bold_last_row(row):
-                return ["font-weight: bold" if row.name == len(df) - 1 else "" for _ in row]
-
-            def increase_font_size(row):
-                return [f"font-size: 32px" for _ in row]  # Adjust size as needed
-
-            styled = (
-                df.style
-                .format({"Cost (USD/ha/yr)": lambda v: f"${v:,.2f}" if v is not None else "No data available"})
-                .apply(bold_last_row, axis=1)
-                .apply(increase_font_size, axis=1)
+            html_rows = ""
+            for i, r in enumerate(rows):
+                bg = "#f9fafb" if i % 2 == 0 else "#ffffff"
+                v = r["Cost (USD/ha/yr)"]
+                value_str = f"${v:,.2f}" if v is not None else "No data available"
+                html_rows += (
+                    f'<tr style="background:{bg}">'
+                    f'<td style="padding:9px 14px">{r["Intervention"]}</td>'
+                    f'<td style="padding:9px 14px; text-align:right">{value_str}</td>'
+                    f'</tr>'
+                )
+            html_rows += (
+                f'<tr style="background:#f0f4f8; font-weight:600">'
+                f'<td style="padding:9px 14px">Total</td>'
+                f'<td style="padding:9px 14px; text-align:right">${total_value:,.2f}</td>'
+                f'</tr>'
             )
-            st.dataframe(styled, width='stretch', hide_index=True)
+            st.markdown(f"""
+                <table style="width:100%; border-collapse:collapse; font-size:15px;">
+                  <thead>
+                    <tr style="background:#006C99; color:white;">
+                      <th style="padding:10px 14px; text-align:left; font-weight:600">Intervention</th>
+                      <th style="padding:10px 14px; text-align:right; font-weight:600">Cost (USD/ha/yr)</th>
+                    </tr>
+                  </thead>
+                  <tbody>{html_rows}</tbody>
+                </table>
+            """, unsafe_allow_html=True)
 
         ssm.COST_UPDATED.set(True)
 
@@ -505,46 +527,30 @@ class Sidebar:
         """Track progress flags and display status"""
         st.subheader("Progress Tracker")
 
-        counter = 0
-        # Location status
-        location_status = "✅" if ssm.LOCATION_ACTIVATED.get() else "⏳"
-        st.write(f"{location_status} **Location Set**")
-        counter += 1
+        def _step(label, done):
+            color = "#16a34a" if done else "#d1d5db"
+            text_color = "#111827" if done else "#9ca3af"
+            dot = (f'<span style="display:inline-block;width:9px;height:9px;border-radius:50%;'
+                   f'background:{color};margin-right:8px;margin-top:3px;flex-shrink:0"></span>')
+            return (f'<div style="display:flex;align-items:flex-start;margin-bottom:7px;'
+                    f'font-size:13px;color:{text_color}">{dot}{label}</div>')
 
-        benefit_extracted = "✅" if ssm.BENEFITS_EXTRACTION_DONE.get() else "⏳"
-        st.write(f"{benefit_extracted} **Benefit Variables Extracted**")
-        counter += 1
+        steps = [
+            ("Location Set", ssm.LOCATION_ACTIVATED.get()),
+            ("Benefit Variables Extracted", ssm.BENEFITS_EXTRACTION_DONE.get()),
+        ]
+        if ssm.MODEL_CLASS.get() is not None and hasattr(ssm.MODEL_CLASS.get().COST_MODEL, 'VARIABLES'):
+            steps.append(("Cost Variables Extracted", ssm.COST_EXTRACTION_DONE.get()))
+        steps += [
+            ("Benefits Calculated", ssm.BENEFITS_UPDATED.get()),
+            ("Costs Calculated", ssm.COST_UPDATED.get()),
+        ]
 
-        # Variables extracted status
-        if ssm.MODEL_CLASS.get() is not None:
-            if hasattr(ssm.MODEL_CLASS.get().COST_MODEL, 'VARIABLES'):
-                cost_extracted = "✅" if ssm.COST_EXTRACTION_DONE.get() else "⏳"
-                st.write(f"{cost_extracted} **Cost Variables Extracted**")
-                counter += 1
+        st.markdown("".join(_step(label, done) for label, done in steps), unsafe_allow_html=True)
 
-
-        # Benefits calculated status
-        benefits_status = "✅" if ssm.BENEFITS_UPDATED.get() else "⏳"
-        st.write(f"{benefits_status} **Benefits Calculated**")
-        counter += 1
-
-        # Costs calculated status (assuming you have a similar flag)
-        costs_status = "✅" if ssm.COST_UPDATED.get() else "⏳"
-        st.write(f"{costs_status} **Costs Calculated**")
-        counter += 1
-
-        # Overall completion
-        total_steps = counter
-        completed_steps = sum([
-            1 if ssm.LOCATION_ACTIVATED.get() else 0,
-            1 if ssm.COST_EXTRACTION_DONE.get() else 0,
-            1 if ssm.BENEFITS_EXTRACTION_DONE.get() else 0,
-            1 if ssm.BENEFITS_UPDATED.get() else 0,
-            1 if ssm.COST_UPDATED.get() else 0
-        ])
-
-        progress_percent = (completed_steps / total_steps) * 100
-        st.progress(progress_percent / 100)
+        completed_steps = sum(1 for _, done in steps if done)
+        total_steps = len(steps)
+        st.progress(completed_steps / total_steps)
         st.caption(f"Progress: {completed_steps}/{total_steps} steps complete")
 
     def download_csv_button(self):
