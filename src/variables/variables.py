@@ -17,9 +17,9 @@ class ModelVariable:
     max_value: Optional[float] = None
     value: float = 0
     lc: LandCoverGroup = None
-    cost_value: float = 0
-    cons_surplus: float = 0
-    exchange_value: float = 0
+    cost_value: float = -999
+    cons_surplus: float = -999
+    exchange_value: float = -999
     global_layer: GlobalVectorLayer = None
     group: Optional[str] = None
     benefit_type: Optional[str] = None
