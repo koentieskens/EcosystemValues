@@ -9,7 +9,7 @@ from src.app_utils.image_render import ImageRenderer
 from src.variables.partners import Partner
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def get_google_connection():
     gcs = ConnectToGoogle()
     gcs.connect_to_google()
@@ -38,11 +38,7 @@ class EcoApp:
 
 
     def welcome(self):
-
-
         with st.container(key='welcome'):
-
-
             col1, col2 = st.columns([1, 1])
             with col1:
                 st.title("BIOME")
