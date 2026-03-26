@@ -43,7 +43,7 @@ class EcoApp:
             with col1:
                 st.title("BIOME")
             with col2:
-                ImageRenderer.two_logos_same_height(Partner.PROGREEN_FULL, Partner.US, height_px=100)
+                ImageRenderer.two_logos_same_height(Partner.US, Partner.PROGREEN_FULL, height_px=100)
             st.subheader("A platform for spatial cost–benefit analysis of nature and resilience investments")
             st.markdown(" ")
 

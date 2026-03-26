@@ -1,6 +1,8 @@
 import streamlit as st
 
 import math
+import os
+import tempfile
 import folium
 import geopandas as gpd
 
@@ -28,10 +30,9 @@ class LocationManager:
         if ssm.LOCATION_ACTIVATED.get():
             if ssm.LOCATION_TYPE.get() == 'polygon':
                 st.success("✅ **Polygon input is active**")
-            elif ssm.LOCATION_TYPE.get() == 'manual':
-                st.warning("""Currently using manual location input values.
-                If you want to use a polygon to define the location,
-                use the drawing tools on the map to draw an area of interest and activate it.
+            elif ssm.LOCATION_TYPE.get() in ('manual', 'upload'):
+                st.warning("""Currently using another input method.
+                If you want to use a drawn polygon, draw an area of interest on the map and activate it.
                 """)
         else:
             st.warning("Use the drawing tools on the map to draw an area of interest and activate it!")
@@ -53,13 +54,31 @@ class LocationManager:
         if ssm.LOCATION_ACTIVATED.get():
             if ssm.LOCATION_TYPE.get() == 'manual':
                 st.success("✅ **Manual input is active**")
-            elif ssm.LOCATION_TYPE.get() == 'polygon':
-                st.warning("""Currently using map location input values.
-                If you want to use manual latitude, longitude and area inputs to define the location,
+            elif ssm.LOCATION_TYPE.get() in ('polygon', 'upload'):
+                st.warning("""Currently using another input method.
+                If you want to use manual latitude, longitude and area inputs,
                 provide them here and activate manual input.
                 """)
         else:
             st.warning("Provide latitude, longitude, and area values and activate.")
+
+        with st.expander("Upload File", expanded=ssm.LOCATION_TYPE.get() == 'upload'):
+            st.caption("GeoJSON, GeoPackage, or zipped Shapefile (.zip). The first polygon in the file is used.")
+            uploaded_file = st.file_uploader(
+                "Upload area file",
+                type=["geojson", "json", "gpkg", "zip"],
+                label_visibility="collapsed",
+                key="aoi_file_upload",
+            )
+            if uploaded_file is not None:
+                if st.button("Activate Uploaded Area", key="activate_upload"):
+                    try:
+                        self._activate_uploaded_file(uploaded_file)
+                    except Exception as e:
+                        st.error(f"An error occurred: {e}")
+
+            if ssm.LOCATION_ACTIVATED.get() and ssm.LOCATION_TYPE.get() == 'upload':
+                st.success("✅ **Uploaded area is active**")
 
         self.clear_location()
 
@@ -204,6 +223,58 @@ class LocationManager:
             ssm.LOCATION_ACTIVATED.set(False)
             st.error(f"An error occurred: {e}")
             return
+
+    def _activate_uploaded_file(self, uploaded_file):
+        tmp_path = None
+        try:
+            suffix = '.' + uploaded_file.name.rsplit('.', 1)[-1].lower()
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+                tmp.write(uploaded_file.getvalue())
+                tmp_path = tmp.name
+
+            gdf = gpd.read_file(tmp_path)
+
+            if gdf.crs is None:
+                st.error("The uploaded file has no coordinate reference system (CRS). Please re-export your file with a CRS defined (e.g. WGS84 / EPSG:4326) and try again.")
+                return
+            gdf = gdf.to_crs('EPSG:4326')
+
+            geom = gdf.geometry.iloc[0]
+            if geom.geom_type == 'MultiPolygon':
+                geom = max(geom.geoms, key=lambda g: g.area)
+            elif geom.geom_type != 'Polygon':
+                st.error(f"Unsupported geometry type: {geom.geom_type}. Please upload a file containing polygon geometries.")
+                return
+
+            centroid = geom.centroid
+            area = St_Utils.get_geodesic_area(geom)
+            folium_coords = [(y, x) for x, y in geom.exterior.coords[:-1]]
+            aoi_gdf = gpd.GeoDataFrame([1], geometry=[geom], crs='EPSG:4326')
+
+            ssm.LOCATION_ACTIVATED.set(True)
+            ssm.LOCATION_TYPE.set('upload')
+            ssm.DRAWN_POLYGON.set(geom)
+            ssm.UNSAVED_POLYGON.set(folium_coords)
+            ssm.POLYGON_AREA.set(area)
+            ssm.POLYGON_CENTROID.set((centroid.y, centroid.x))
+            ssm.PROJECT_LOCATION.set({'lat': centroid.y, 'lon': centroid.x, 'area': area})
+            ssm.SAVED_POLYGON.set(folium_coords)
+            ssm.AOI_GDF.set(aoi_gdf)
+            ssm.ZOOM_LEVEL.set(self._zoom_from_area(area))
+
+            county, country, country_code, iso3 = St_Utils.get_location_info(centroid.y, centroid.x)
+            ssm.SAVED_COUNTRY.set(country)
+            ssm.SAVED_REGION.set(county)
+            ssm.SAVED_COUNTRY_CODE.set(country_code)
+            ssm.SAVED_COUNTRY_ISO3.set(iso3)
+            st.rerun()
+
+        except Exception as e:
+            ssm.LOCATION_ACTIVATED.set(False)
+            st.error(f"Failed to load file: {e}")
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
 
     def draw_map(self):
         try:

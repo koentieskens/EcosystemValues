@@ -760,7 +760,7 @@ class Sidebar:
                             'Category': 'Costs',
                             'Variable': layer.variable.full_name,
                             'Value': layer.cost_value,
-                            'Unit': 'USD per hectare per year',
+                            'Unit': 'USD per ha per year',
                             'Source': layer.variable.source,
                             'Description': layer.variable.description,
                         })
@@ -771,7 +771,7 @@ class Sidebar:
                             'Category': 'Costs',
                             'Variable': layer.variable.full_name,
                             'Value': layer.cost_value,
-                            'Unit': 'USD per hectare per year',
+                            'Unit': 'USD per ha per year',
                             'Source': layer.variable.data_source,
                             'Description': layer.variable.description,
                         })
