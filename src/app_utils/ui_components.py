@@ -653,34 +653,34 @@ class Sidebar:
             data_rows.append({
                 'Category': 'Location',
                 'Variable': 'Latitude',
-                'Description': 'Latitude for project location',
                 'Value': ssm.POLYGON_CENTROID.get()[0] if ssm.POLYGON_CENTROID.get() else location['lat'],
-                'Unit': 'degrees',
-                'Source': 'User input'
+                'Unit': 'Decimal degrees (WGS84)',
+                'Source': 'User input',
+                'Description': 'Latitude for project location'
             })
             data_rows.append({
                 'Category': 'Location',
                 'Variable': 'Longitude',
-                'Description': 'Longitude for project location',
                 'Value': ssm.POLYGON_CENTROID.get()[1] if ssm.POLYGON_CENTROID.get() else location['lon'],
-                'Unit': 'degrees',
-                'Source': 'User input'
+                'Unit': 'Decimal degrees (WGS84)',
+                'Source': 'User input',
+                'Description': 'Longitude for project location',
             })
             data_rows.append({
                 'Category': 'Location',
                 'Variable': 'Area',
-                'Description': 'Area size for project',
                 'Value': location['area'],
-                'Unit': 'hectares',
-                'Source': 'User input'
+                'Unit': 'Hectares',
+                'Source': 'User input',
+                'Description': 'Area size for project'
             })
             data_rows.append({
                 'Category': 'Location',
                 'Variable': 'Biome',
-                'Description': 'Biome type selected',
                 'Value': ssm.ECOSYSTEM_DISPLAY_NAME.get(),
                 'Unit': 'type',
-                'Source': 'User input'
+                'Source': 'User input',
+                'Description': 'Biome type selected',
             })
 
         # Add extracted variables
@@ -689,10 +689,10 @@ class Sidebar:
                 data_rows.append({
                     'Category': 'Cost Variables',
                     'Variable': var_obj.name,
-                    'Description': var_obj.description,
                     'Value': var_obj.value,
                     'Unit': var_obj.variable.unit,
-                    'Source': var_obj.variable.source
+                    'Source': var_obj.variable.source,
+                    'Description': var_obj.description,
                 })
 
         if ssm.BENEFITS_EXTRACTED_VALUES.get():
@@ -700,10 +700,10 @@ class Sidebar:
                 data_rows.append({
                     'Category': 'Benefit Variables',
                     'Variable': var_obj.name,
-                    'Description': var_obj.description,
                     'Value': var_obj.value,
                     'Unit': var_obj.variable.unit,
-                    'Source': var_obj.variable.source
+                    'Source': var_obj.variable.source,
+                    'Description': var_obj.description,
                 })
 
         # Add calculated benefit values
@@ -713,10 +713,10 @@ class Sidebar:
                 data_rows.append({
                     'Category': 'Benefit - Welfare Value',
                     'Variable': var_obj.name,
-                    'Description': var_obj.description,
                     'Value': var_obj.cons_surplus,
                     'Unit': var_obj.variable.unit,
-                    'Source': var_obj.variable.data_source
+                    'Source': var_obj.variable.data_source,
+                    'Description': var_obj.description
                 })
         if ssm.SIIKAMAKI_BENEFITS.get() and ssm.BENEFITS_UPDATED.get():
             variables = ssm.MODEL_CLASS.get().SIIKAMAKI
@@ -724,10 +724,10 @@ class Sidebar:
                 data_rows.append({
                     'Category': 'Benefit - Welfare Value',
                     'Variable': var_obj.variable.full_name,
-                    'Description': var_obj.variable.description,
                     'Value': var_obj.cons_surplus,
                     'Unit': var_obj.variable.unit,
-                    'Source': var_obj.variable.source
+                    'Source': var_obj.variable.source,
+                    'Description': var_obj.variable.description,
                 })
         if ssm.PREDICTION_SETS.get() and ssm.BENEFITS_UPDATED.get():
             variables = ssm.MODEL_CLASS.get().ECOSYSTEM_SERVICES
@@ -735,10 +735,10 @@ class Sidebar:
                 data_rows.append({
                     'Category': 'Benefit - Exchange Value',
                     'Variable': var_obj.name,
-                    'Description': var_obj.description,
                     'Value': var_obj.exchange_value,
                     'Unit': var_obj.variable.unit,
-                    'Source': var_obj.variable.data_source
+                    'Source': var_obj.variable.data_source,
+                    'Description': var_obj.description,
                 })
 
         if ssm.SIIKAMAKI_BENEFITS.get() and ssm.BENEFITS_UPDATED.get():
@@ -747,10 +747,10 @@ class Sidebar:
                data_rows.append({
                    'Category': 'Benefit - Exchange Value',
                    'Variable': var_obj.variable.full_name,
-                   'Description': var_obj.variable.description,
                    'Value': var_obj.exchange_value,
                    'Unit': var_obj.variable.unit,
-                   'Source': var_obj.variable.source
+                   'Source': var_obj.variable.source,
+                   'Description': var_obj.variable.description,
                })
 
         if ssm.COST_DATA.get():
@@ -759,10 +759,10 @@ class Sidebar:
                         data_rows.append({
                             'Category': 'Costs',
                             'Variable': layer.variable.full_name,
-                            'Description': layer.variable.description,
-                            'Unit': 'USD per hectare per year',
                             'Value': layer.cost_value,
-                            'Source': layer.variable.source
+                            'Unit': 'USD per hectare per year',
+                            'Source': layer.variable.source,
+                            'Description': layer.variable.description,
                         })
             if hasattr(ssm.MODEL_CLASS.get().COST_MODEL, 'NBS'):
                 for layer in ssm.MODEL_CLASS.get().COST_MODEL.NBS:
@@ -770,14 +770,17 @@ class Sidebar:
                         data_rows.append({
                             'Category': 'Costs',
                             'Variable': layer.variable.full_name,
-                            'Description': layer.variable.description,
-                            'Unit': 'USD per hectare per year',
                             'Value': layer.cost_value,
+                            'Unit': 'USD per hectare per year',
                             'Source': layer.variable.data_source,
+                            'Description': layer.variable.description,
                         })
 
         # Create DataFrame and convert to CSV
         df = pd.DataFrame(data_rows)
+
+        # filter out values that we did not calculate
+        df = df[df['Value'] != -999]
 
         # Convert to CSV string
         output = io.StringIO()
