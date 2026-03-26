@@ -30,6 +30,13 @@ class Partner:
         logo='src/images/partners/progreen_full.jpg'
     )
 
+    PROGREEN_WHITE = PartnerData(
+        name='Progreen',
+        full_name='Progreen',
+        url='https://www.progreen.info/',
+        logo='src/images/partners/progreen_white.png'
+    )
+
     FSD = PartnerData(
         name='FSD',
         full_name='Foundation for Sustainable Development',
@@ -72,6 +79,13 @@ class Partner:
         logo='src/images/partners/gfdrr.png'
     )
 
+    GFDRR_WHITE = PartnerData(
+        name='GFDRR',
+        full_name='Global Facility for Disaster Risk Reduction',
+        url='https://www.gfdrr.org/',
+        logo='src/images/partners/gfdrr_white.png'
+    )
+
     NBSINVEST = PartnerData(
         name='NBSInvest',
         full_name='NBSInvest',
@@ -84,6 +98,13 @@ class Partner:
         full_name='Global Program on Nature Based Solutions fro Climate Resilience',
         url='https://www.naturebasedsolutions.org/',
         logo='src/images/partners/gpnbs.png'
+    )
+
+    GPNBS_WHITE = PartnerData(
+        name='GPNBS',
+        full_name='Global Program on Nature Based Solutions fro Climate Resilience',
+        url='https://www.naturebasedsolutions.org/',
+        logo='src/images/partners/gpnbs_white.png'
     )
 
     GPS = PartnerData(
