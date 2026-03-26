@@ -1,17 +1,13 @@
 import streamlit as st
 import math
-import reverse_geocode
-from iso3166 import countries
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, Point
 from pyproj import CRS, Transformer, Geod
 from ..extract_data.predictions import Predictions
 from ..utils.spatial import Spatial
 from ..utils import wb360
 import geopandas as gpd
-from shapely.geometry import Point
-import numpy as np
-
-
+from src.variables.global_layers import GlobalVectorLayer
+import wbgapi as wb
 
 class St_Utils:
     """Streamlit utility functions"""
@@ -51,6 +47,20 @@ class St_Utils:
 
     @staticmethod
     def extract_value_from_gpkg(gpkg_layer, lat=0.0, lon=0.0):
+        """
+        Extracts a value from a specified Geopackage layer based on the geographic
+        coordinates and computes a derived value (benefit per area) for mangrove areas.
+
+        The method retrieves data from a specific Geopackage layer taht contains mangrove coastal flood protection es
+        using bounding box filtering based on the given latitude and longitude. It locates the
+        intersecting geometry and computes a per-hectare value from the extracted fields.
+
+        :param gpkg_layer: The Geopackage layer from which the data is to be extracted.
+        :param lat: The latitude of the point of interest. Defaults to 0.0.
+        :param lon: The longitude of the point of interest. Defaults to 0.0.
+        :return: The calculated benefit per hectare value derived from the intersecting data.
+        :return type: float
+        """
         gpkg_path = gpkg_layer.gcs_path
         layer = gpkg_layer.layer
         buffer = 0.01
@@ -65,6 +75,27 @@ class St_Utils:
 
     @staticmethod
     def extract_global_layer_with_polygon(layers, polygon_gdf):
+        """
+        Extracts a global layer's data intersecting with a specified polygon.
+
+        This method processes a list of layers, retrieves their data from a
+        Cloud Optimized GeoTIFF (COG), and intersects the data with a given
+        polygon. It creates a result dictionary associating each layer's
+        full name with the computed value and returns the aggregated result.
+
+        :param layers: List of layer objects containing bucket, gcs_path, band,
+                       and full_name data.
+        :type layers: list
+
+        :param polygon_gdf: Geopandas GeoDataFrame representing the polygon
+                            geometry used for the intersection.
+        :type polygon_gdf: geopandas.GeoDataFrame
+
+        :return: A list of dictionaries where each dictionary maps a layer's
+                 full name to its value derived from the intersection with
+                 the provided polygon.
+        :rtype: list
+        """
         l = []
         for layer in layers:
             bucket = layer.bucket
@@ -77,6 +108,23 @@ class St_Utils:
 
     @staticmethod
     def extract_global_layer_single(layer, polygon_gdf):
+        """
+        Extract a numerical value from a cloud-optimized GeoTIFF (COG) file based on
+        the provided polygon geometry.
+
+        This method retrieves data from a specific band of a COG file stored in Google
+        Cloud Storage. The method uses the polygon geometry to extract targeted spatial
+        data from the file.
+
+        :param layer: The layer object containing metadata about the COG file, such as
+            the bucket name, path to the COG file in Google Cloud Storage, and band
+            to extract values from.
+        :param polygon_gdf: A GeoDataFrame containing the polygon geometry used to
+            intersect and extract a value from the raster data in the COG file.
+        :return: Extracted numerical value corresponding to the polygon geometry
+            from the specified band of the COG file.
+        :rtype: float
+        """
         bucket = layer.bucket
         gcs_loc = layer.gcs_path
         gcs_path = f"gs://{bucket}/{gcs_loc}"
@@ -85,62 +133,68 @@ class St_Utils:
 
     @staticmethod
     def get_location_info(lat, lon):
-        """Get county and country information from coordinates"""
+        """Get region, country, ISO2 and ISO3 from WB Admin1 boundaries gpkg.
+        Falls back to nearest polygon for ocean locations."""
+        if lat == 0.0 and lon == 0.0:
+            return "", "", "", ""
         try:
-            if lat == 0.0 and lon == 0.0:
-                return "", "", ""
-
-            # Try original method
-            try:
-                location_data = reverse_geocode.get((lat, lon))
-                county = location_data.get('county', '')
-                country_code = location_data.get('country_code', '')
-
-                if country_code:
-                    country_obj = countries.get(country_code)
-                    country = country_obj.name if country_obj else country_code
-                    return county, country, country_code
-            except:
-                pass
-
-            # Fallback: find closest land point and try again
-            # Move point towards nearest land (simple approach)
-            search_radius = 0.5  # degrees
-
-            for offset_lat in np.arange(-search_radius, search_radius, 0.1):
-                for offset_lon in np.arange(-search_radius, search_radius, 0.1):
-                    try:
-                        test_lat = lat + offset_lat
-                        test_lon = lon + offset_lon
-
-                        location_data = reverse_geocode.get((test_lat, test_lon))
-                        country_code = location_data.get('country_code', '')
-
-                        if country_code:
-                            country_obj = countries.get(country_code)
-                            country = country_obj.name if country_obj else country_code
-                            return "", country, country_code
-
-                    except:
-                        continue
-
-            return "", "", ""
-
-        except Exception as e:
-            return "", "", ""
+            gpkg_layer = GlobalVectorLayer.WB_ADMIN1_BOUNDARIES
+            point = Point(lon, lat)
+            buffer = 1.0
+            bbox = (lon - buffer, lat - buffer, lon + buffer, lat + buffer)
+            gdf = gpd.read_file(gpkg_layer.gcs_path, layer=gpkg_layer.layer, bbox=bbox)
+            if gdf.empty:
+                return "", "", "", ""
+            intersecting = gdf[gdf.geometry.intersects(point)]
+            if not intersecting.empty:
+                row = intersecting.iloc[0]
+            else:
+                # Ocean fallback: nearest polygon by geometry distance
+                gdf = gdf.copy()
+                gdf['_dist'] = gdf.geometry.distance(point)
+                row = gdf.loc[gdf['_dist'].idxmin()]
+            region = row.get('NAM_1', '') or ''
+            country = row.get('NAM_0', '') or ''
+            iso2 = row.get('ISO_A2', '') or ''
+            iso3 = row.get('ISO_A3', '') or ''
+            return region, country, iso2, iso3
+        except Exception:
+            return "", "", "", ""
 
     @staticmethod
     def get_geodesic_area(polygon: Polygon):
+        """
+        Calculates the geodesic area of a given polygon using the WGS84 ellipsoid.
 
+        This method computes the geodesic area by utilizing the geometry described by
+        the `Polygon` parameter, which should be defined in geographic coordinates.
+
+        The result is returned in hectares by dividing the computed area by 10,000.
+
+        :param polygon: A `Polygon` object representing the geometry for which the
+            geodesic area is to be calculated. The coordinates must be defined in
+            latitude and longitude (geographic coordinates).
+        :type polygon: Polygon
+        :return: The geodesic area of the polygon in hectares.
+        :rtype: float
+        """
         g = Geod(ellps='WGS84')
         geod_area = abs(g.geometry_area_perimeter(polygon)[0])
 
         return geod_area / 10000
 
-from src.variables.spatial_variable import CountrySpatialVariable
-import wbgapi as wb
 class CurrencyConverter:
+    """
+    CurrencyConverter is a utility class that provides methods for currency
+    conversion, exchange rate retrieval, purchasing power parity (PPP) conversion,
+    and inflation rate calculations across different years and countries.
 
+    Its purpose is to simplify and centralize data retrieval and conversions for
+    global financial calculations. The class relies on external data sources such
+    as World Bank and IMF datasets to fetch required financial and economic data.
+
+
+    """
     @staticmethod
     def get_wb_value(var_id: str = None, country: str = 'USA', year: int = 2024):
         df = wb.data.DataFrame(var_id, country, year)
@@ -156,6 +210,7 @@ class CurrencyConverter:
         return value.item()
 
     @staticmethod
+    @st.cache_data(show_spinner=False)
     def get_ppp_conversion_rate(country, year):
         try:
             database_id = "IMF_WEO"
@@ -173,6 +228,7 @@ class CurrencyConverter:
         return value.item()
 
     @staticmethod
+    @st.cache_data(show_spinner=False)
     def get_excange_rate(country, year):
         try:
             database_id = "IMF_IFS"
@@ -196,6 +252,7 @@ class CurrencyConverter:
         return inflation_rate.item()
 
     @staticmethod
+    @st.cache_data(show_spinner=False)
     def get_local_inflation(country, from_year, to_year):
         try:
             database_id = "FAO_CP"
