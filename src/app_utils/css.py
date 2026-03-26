@@ -46,6 +46,11 @@ class CSS:
 
     HIDE_ANCHOR_CSS = """
     <style>
+    /* Reduce default top padding of the main content area */
+    [data-testid="stAppViewBlockContainer"] {
+        padding-top: 1rem !important;
+    }
+
     /* Hide all possible anchor link elements */
     .stMarkdown h1 a,
     .stMarkdown h2 a,
